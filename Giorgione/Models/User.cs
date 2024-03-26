@@ -13,7 +13,7 @@ namespace Giorgione.Models;
 internal class User
 {
     [Key]
-    public ulong UserId { get; set; }
+    public ulong Id { get; set; }
 
     public DateOnly? Birthday { get; set; }
 }
