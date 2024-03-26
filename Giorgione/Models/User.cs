@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Giorgione.Models;
 
-internal class User
+internal sealed class User
 {
     [Key]
     public ulong Id { get; set; }
