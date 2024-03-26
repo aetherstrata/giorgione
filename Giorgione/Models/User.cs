@@ -9,10 +9,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Giorgione.Models;
+
 internal class User
 {
     [Key]
     public ulong Id { get; set; }
 
-    public DateOnly Birthday { get; set; }
+    public DateOnly? Birthday { get; set; }
 }

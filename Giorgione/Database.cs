@@ -12,6 +12,7 @@ using Giorgione.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Giorgione;
+
 internal class Database 
 {
     public DbSet<User> Users { get; set; }
