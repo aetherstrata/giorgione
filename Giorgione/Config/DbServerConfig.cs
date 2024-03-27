@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Giorgione.Config;
 
-internal sealed class DbServerConfig
+public sealed class DbServerConfig
 {
     [JsonPropertyName("address")]
     public string Address { get; init; } = "localhost";

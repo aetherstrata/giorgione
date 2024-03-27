@@ -12,7 +12,7 @@ using Serilog;
 
 namespace Giorgione.Modules;
 
-internal partial class Starboard(IHttpClientFactory clientFactory, BotConfig config) : InteractionModuleBase<SocketInteractionContext>
+public partial class Starboard(IHttpClientFactory clientFactory, BotConfig config) : InteractionModuleBase<SocketInteractionContext>
 {
     private static readonly Random random = new();
     private static readonly Regex regex = urlRegex();

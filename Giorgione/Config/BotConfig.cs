@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Giorgione.Config;
 
-internal sealed class BotConfig
+public sealed class BotConfig
 {
     [JsonPropertyName("token")]
     public required string Token { get; init; }
