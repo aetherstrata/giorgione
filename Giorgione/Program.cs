@@ -6,6 +6,8 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 
+using Giorgione.Config;
+
 using Microsoft.Extensions.DependencyInjection;
 
 using Serilog;
@@ -43,9 +45,10 @@ public static class Program
             .AddSingleton<BotConfig>(_ =>
             {
                 byte[] json = File.ReadAllBytes("config.json");
-                var config = JsonSerializer.Deserialize(json, JsonContext.Default.BotConfig);
+                var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.BotConfig);
                 return config ?? throw new InvalidDataException("The config file has an invalid format");
             })
+            .AddDbContextFactory<DatabaseContext>()
             .AddSingleton(_ => new DiscordSocketConfig
             {
                 GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers |

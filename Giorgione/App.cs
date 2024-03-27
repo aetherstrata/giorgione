@@ -4,6 +4,8 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 
+using Giorgione.Config;
+
 using Serilog;
 using Serilog.Events;
 
