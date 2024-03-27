@@ -16,7 +16,7 @@ public class Birthdate : InteractionModuleBase<SocketInteractionContext>
             .WithAuthor(a => a.WithName("\uD83C\uDF82 Buon Compleanno!"))
             .WithDescription(
                 $"""
-                 Sono Davvero Contento che oggi sia il compleanno di <@{Context.Guild.Id}>
+                 Sono Davvero Contento che oggi sia il compleanno di <@{Context.User.Id}>
                  """)
             .Build();
 
