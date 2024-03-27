@@ -8,12 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Giorgione;
 
-internal class DatabaseContext(BotConfig config) : DbContext
+internal class DatabaseContext : DbContext
 {
     public DbSet<User> Users { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseNpgsql(config.DbServer.GetConnectionString());
-    }
 }

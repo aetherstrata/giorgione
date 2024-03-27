@@ -8,6 +8,7 @@ using Discord.WebSocket;
 
 using Giorgione.Config;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 using Serilog;
@@ -48,7 +49,10 @@ public static class Program
                 var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.BotConfig);
                 return config ?? throw new InvalidDataException("The config file has an invalid format");
             })
-            .AddDbContextFactory<DatabaseContext>()
+            .AddDbContextFactory<DatabaseContext>((provider, builder) =>
+            {
+                builder.UseNpgsql(provider.GetRequiredService<BotConfig>().DbServer.GetConnectionString());
+            })
             .AddSingleton(_ => new DiscordSocketConfig
             {
                 GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers |
