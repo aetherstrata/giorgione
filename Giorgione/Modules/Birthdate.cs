@@ -1,4 +1,4 @@
-﻿// Copyright (c) Davide Pierotti <d.pierotti@live.it>. Licensed under the MIT Licence.
+﻿// Copyright (c) Davide Pierotti <d.pierotti@live.it>. Licensed under the GPLv3 Licence.
 // See the LICENCE file in the repository root for full licence text.
 
 using Discord.Interactions;
@@ -16,7 +16,7 @@ public class Birthdate : InteractionModuleBase<SocketInteractionContext>
             .WithAuthor(a => a.WithName("\uD83C\uDF82 Buon Compleanno!"))
             .WithDescription(
                 $"""
-                 Sono Davvero Contento che oggi sia il compleanno di <@{Context.Guild.Id}>                 
+                 Sono Davvero Contento che oggi sia il compleanno di <@{Context.Guild.Id}>
                  """)
             .Build();
 

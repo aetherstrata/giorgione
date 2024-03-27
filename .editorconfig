@@ -22,7 +22,7 @@ indent_size = 4
 trim_trailing_whitespace = true
 
 # License header
-file_header_template = Copyright (c) Davide Pierotti <d.pierotti@live.it>. Licensed under the MIT Licence.\nSee the LICENCE file in the repository root for full licence text.
+file_header_template = Copyright (c) Davide Pierotti <d.pierotti@live.it>. Licensed under the GPLv3 Licence.\nSee the LICENCE file in the repository root for full licence text.
 
 #Naming styles declarations
 dotnet_naming_style.pascalcase.capitalization = pascal_case
