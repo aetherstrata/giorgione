@@ -1,12 +1,6 @@
 ﻿// Copyright (c) Davide Pierotti <d.pierotti@live.it>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using Discord.Interactions;
 using Discord;
 
@@ -14,7 +8,7 @@ namespace Giorgione.Modules;
 
 public class Birthdate : InteractionModuleBase<SocketInteractionContext>
 {
-    [SlashCommand("Birthday", "Auguri di compleanno")]
+    [SlashCommand("birthday", "Auguri di compleanno")]
     public Task BirthDayAsync()
     {
         var embed = new EmbedBuilder()
