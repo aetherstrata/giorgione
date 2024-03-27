@@ -20,12 +20,9 @@ internal partial class Starboard(IHttpClientFactory clientFactory, BotConfig con
     private ITextChannel? _starboard;
 
     /// <inheritdoc />
-    public override void BeforeExecute(ICommandInfo command)
+    public override async Task BeforeExecuteAsync(ICommandInfo command)
     {
-        base.BeforeExecute(command);
-
-        _starboard ??= (ITextChannel)Context.Client.GetChannelAsync(config.StarboardId)
-            .ConfigureAwait(false).GetAwaiter().GetResult();
+        _starboard ??= (ITextChannel) await Context.Client.GetChannelAsync(config.StarboardId).ConfigureAwait(false);
     }
 
     [MessageCommand("Stellina")]
