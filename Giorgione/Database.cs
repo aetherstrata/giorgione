@@ -6,14 +6,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using Giorgione.Models;
 
 using Microsoft.EntityFrameworkCore;
 
 namespace Giorgione;
 
-internal class Database 
+internal class Database : DbContext
 {
+
     public DbSet<User> Users { get; set; }
+
 }
+
+
