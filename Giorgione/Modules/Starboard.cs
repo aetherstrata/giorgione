@@ -6,14 +6,16 @@ using System.Text.RegularExpressions;
 using Discord;
 using Discord.Interactions;
 
+using Giorgione.Config;
+
 using Serilog;
 
 namespace Giorgione.Modules;
 
-public partial class Starboard(IHttpClientFactory clientFactory, BotConfig config) : InteractionModuleBase<SocketInteractionContext>
+internal partial class Starboard(IHttpClientFactory clientFactory, BotConfig config) : InteractionModuleBase<SocketInteractionContext>
 {
-    private static readonly Random RANDOM = new();
-    private static readonly Regex REGEX = urlRegex();
+    private static readonly Random random = new();
+    private static readonly Regex regex = urlRegex();
 
     private ITextChannel? _starboard;
 
@@ -112,7 +114,7 @@ public partial class Starboard(IHttpClientFactory clientFactory, BotConfig confi
 
     private string stripImgAttachments(IMessage message, ICollection<string> imgUrls)
     {
-        return REGEX
+        return regex
             .Replace(message.Content, match =>
             {
                 // Do not remove the url if it's not an image
@@ -156,7 +158,7 @@ public partial class Starboard(IHttpClientFactory clientFactory, BotConfig confi
 
     private static Color getRandomColor()
     {
-        return new Color((byte)RANDOM.Next(256), (byte)RANDOM.Next(256), (byte)RANDOM.Next(256));
+        return new Color((byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256));
     }
 
     [GeneratedRegex(@"(http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)")]

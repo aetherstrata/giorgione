@@ -7,6 +7,8 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 
+using Giorgione.Config;
+
 namespace Giorgione;
 
 internal class InteractionHandler(DiscordSocketClient client, InteractionService handler, IServiceProvider services, BotConfig config)

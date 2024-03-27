@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 
-namespace Giorgione;
+namespace Giorgione.Config;
 
-public sealed class BotConfig
+internal sealed class BotConfig
 {
     [JsonPropertyName("token")]
     public required string Token { get; init; }
@@ -12,8 +12,11 @@ public sealed class BotConfig
 
     [JsonPropertyName("starboard_id")]
     public required ulong StarboardId { get; init; }
+
+    [JsonPropertyName("db_server")]
+    public required DbServerConfig DbServer { get; init; }
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(BotConfig))]
-public sealed partial class JsonContext : JsonSerializerContext;
+internal sealed partial class ConfigJsonContext : JsonSerializerContext;
