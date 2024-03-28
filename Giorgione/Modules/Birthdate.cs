@@ -14,10 +14,7 @@ public class Birthdate : InteractionModuleBase<SocketInteractionContext>
         var embed = new EmbedBuilder()
             .WithColor(Color.Blue)
             .WithAuthor(a => a.WithName("\uD83C\uDF82 Buon Compleanno!"))
-            .WithDescription(
-                $"""
-                 Sono Davvero Contento che oggi sia il compleanno di <@{Context.User.Id}>
-                 """)
+            .WithDescription($"Sono Davvero Contento che oggi sia il compleanno di <@{Context.User.Mention}>")
             .Build();
 
         return RespondAsync(embed: embed);
