@@ -9,9 +9,16 @@ using Discord.WebSocket;
 
 using Giorgione.Config;
 
+using Microsoft.Extensions.Hosting;
+
 namespace Giorgione;
 
-internal class InteractionHandler(DiscordSocketClient client, InteractionService handler, IServiceProvider services, BotConfig config)
+internal class InteractionHandler(
+    DiscordSocketClient client,
+    InteractionService handler,
+    BotConfig config,
+    IServiceProvider services,
+    IHostEnvironment environment)
 {
     internal async Task InitializeAsync()
     {
@@ -29,7 +36,7 @@ internal class InteractionHandler(DiscordSocketClient client, InteractionService
     {
         // Context & Slash commands can be automatically registered, but this process needs to happen after the client enters the READY state.
         // Since Global Commands take around 1 hour to register, we should use a test guild to instantly update and test our commands.
-        if (Program.IsDebug)
+        if (environment.IsDevelopment())
             await handler.RegisterCommandsToGuildAsync(config.GuildId);
         else
             await handler.RegisterCommandsGloballyAsync(true);

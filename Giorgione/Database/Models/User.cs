@@ -3,12 +3,12 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Giorgione.Models;
+namespace Giorgione.Database.Models;
 
-internal sealed class User
+public sealed class User(ulong id)
 {
     [Key]
-    public ulong Id { get; set; }
+    public ulong Id { get; init; } = id;
 
     public DateOnly? Birthday { get; set; }
 }

@@ -25,7 +25,7 @@ public partial class Starboard(IHttpClientFactory clientFactory, BotConfig confi
         _starboard ??= (ITextChannel) await Context.Client.GetChannelAsync(config.StarboardId).ConfigureAwait(false);
     }
 
-    [MessageCommand("Stellina")]
+    [MessageCommand("Star")]
     public async Task CloneToStarboard(IMessage message)
     {
         if (_starboard is null)
@@ -88,7 +88,7 @@ public partial class Starboard(IHttpClientFactory clientFactory, BotConfig confi
         //Send the images in different embeds
         if (imgUrls.Count > 1)
         {
-            await Parallel.ForEachAsync(imgUrls.Skip(1), async (url, _) =>
+            await Parallel.ForEachAsync(imgUrls.Skip(1), async (url, ct) =>
             {
                 var embed = new EmbedBuilder()
                     .WithColor(embedColor)

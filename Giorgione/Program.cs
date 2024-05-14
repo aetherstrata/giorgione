@@ -1,74 +1,53 @@
-﻿using System.Text.Json;
-
-using Discord;
+﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 
+using Giorgione;
 using Giorgione.Config;
+using Giorgione.Database;
+using Giorgione.Workers;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-using Serilog;
-using Serilog.Events;
+var builder = Host.CreateApplicationBuilder(args);
 
-namespace Giorgione;
+builder.Logging.ClearProviders();
 
-public static class Program
-{
-    public const bool IsDebug =
-#if DEBUG
-        true;
-#else
-        false;
-#endif
-
-    private const string output_template = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u4}] {Message:lj} <{ThreadId}><{ThreadName}>{NewLine}{Exception}";
-
-    public static async Task Main(string[] args)
+builder.Services
+    .AddHttpClient()
+    .AddSerilog()
+    .AddScheduling(builder.Configuration.GetConnectionString("QuartzContext"))
+    .AddSingleton(builder.Configuration.GetSection("BotConfig").Get<BotConfig>()
+                  ?? throw new InvalidOperationException("Could not read the bot configuration"))
+    .AddDbContextFactory<UsersDbContext>(db =>
     {
-        var loggerConfig = new LoggerConfiguration()
-            .Enrich.WithThreadId()
-            .Enrich.WithThreadName()
-            .WriteTo.Console(LogEventLevel.Debug, output_template)
-            .WriteTo.File(AppContext.BaseDirectory + "log-.txt", LogEventLevel.Debug, output_template, rollingInterval: RollingInterval.Day);
+        db.UseNpgsql(builder.Configuration.GetConnectionString("ApplicationContext")
+                     ?? throw new InvalidOperationException("Could not read EF database connection string"));
+    })
+    .AddSingleton(new DiscordSocketConfig
+    {
+        GatewayIntents = GatewayIntents.AllUnprivileged |
+                         GatewayIntents.GuildMembers |
+                         GatewayIntents.GuildPresences |
+                         GatewayIntents.MessageContent,
+        DefaultRetryMode = RetryMode.AlwaysFail,
+        AuditLogCacheSize = 15,
+        MessageCacheSize = 50,
+    })
+    .AddSingleton(new InteractionServiceConfig
+    {
+        UseCompiledLambda = true
+    })
+    .AddSingleton<DiscordSocketClient>()
+    .AddSingleton<InteractionService>()
+    .AddSingleton<InteractionHandler>()
+    .AddHostedService<GiorgioneBot>();
 
-        Log.Logger = loggerConfig.CreateLogger();
+var host = builder.Build();
 
-        var services = new ServiceCollection()
-            .AddHttpClient()
-            .AddLogging(builder =>
-            {
-                builder.AddSerilog(dispose: true);
-            })
-            .AddSingleton<BotConfig>(_ =>
-            {
-                byte[] json = File.ReadAllBytes("config.json");
-                var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.BotConfig);
-                return config ?? throw new InvalidDataException("The config file has an invalid format");
-            })
-            .AddDbContextFactory<DatabaseContext>((provider, builder) =>
-            {
-                builder.UseNpgsql(provider.GetRequiredService<BotConfig>().DbServer.GetConnectionString());
-            })
-            .AddSingleton(_ => new DiscordSocketConfig
-            {
-                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers |
-                                 GatewayIntents.GuildPresences | GatewayIntents.MessageContent,
-                DefaultRetryMode = RetryMode.AlwaysFail,
-                AuditLogCacheSize = 15,
-                MessageCacheSize = 50,
-            })
-            .AddSingleton(_ => new InteractionServiceConfig
-            {
-                UseCompiledLambda = true
-            })
-            .AddSingleton<DiscordSocketClient>()
-            .AddSingleton<InteractionService>()
-            .AddSingleton<InteractionHandler>()
-            .AddSingleton<App>()
-            .BuildServiceProvider();
-
-        await services.GetRequiredService<App>().StartAsync();
-    }
-}
+await host.StartAsync();
+await host.WaitForShutdownAsync();
