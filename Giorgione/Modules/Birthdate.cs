@@ -19,6 +19,29 @@ public class Birthdate(
     IDbContextFactory<UsersDbContext> dbFactory,
     ILogger<Birthdate> logger) : InteractionModuleBase<SocketInteractionContext>
 {
+    [SlashCommand("show", "Show your birthdate")]
+    public Task GetBirthdayAsync()
+    {
+        try
+        {
+            User? user;
+
+            using (var db = dbFactory.CreateDbContext())
+            {
+                user = db.Find<User>(Context.User.Id);
+            }
+
+            return user is null
+                ? RespondAsync($"Not set")
+                : RespondAsync($"{user.Birthday}");
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Could not retrieve birthday data for {UserId}", Context.User.Id);
+            return RespondAsync("Errore");
+        }
+    }
+
     [SlashCommand("set", "Set your birthday")]
     public Task BirthdaySetAsync(string birthday)
     {
@@ -28,7 +51,7 @@ public class Birthdate(
 
             var date = DateOnly.ParseExact(birthday, ["yyyy-M-d", "M-d"], CultureInfo.InvariantCulture);
 
-             using (var db =  dbFactory.CreateDbContext())
+            using (var db = dbFactory.CreateDbContext())
             {
                 user = db.Users.Find(Context.User.Id);
 

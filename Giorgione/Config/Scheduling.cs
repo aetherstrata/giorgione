@@ -21,6 +21,13 @@ internal static class Scheduling
                 store.UsePostgres(connectionString ?? throw new InvalidOperationException("Could not read Quartz's connection string"));
                 store.UseNewtonsoftJsonSerializer();
             });
+
+            var bcJobKey = JobKey.Create(nameof(BirthdateChecker));
+
+            config.AddJob<BirthdateChecker>(bcJobKey);
+            config.AddTrigger(trigger => trigger
+                .ForJob(bcJobKey)
+                .WithCronSchedule(CronScheduleBuilder.DailyAtHourAndMinute(0,0)));
         });
 
         services.AddQuartzHostedService();
