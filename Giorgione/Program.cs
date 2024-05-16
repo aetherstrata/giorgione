@@ -44,9 +44,10 @@ builder.Services
         UseCompiledLambda = true
     })
     .AddSingleton<DiscordSocketClient>()
-    .AddSingleton<IRestClientProvider>(x => x.GetRequiredService<DiscordSocketClient>()) //TODO: wait for fix upstream
+    .AddSingleton<IRestClientProvider>(x => x.GetRequiredService<DiscordSocketClient>()) //TODO: wait for upstream fix
     .AddSingleton<InteractionService>()
     .AddSingleton<InteractionHandler>()
+    .AddHostedService<EvalWatchdog>()
     .AddHostedService<GiorgioneBot>();
 
 var host = builder.Build();
