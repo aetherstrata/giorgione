@@ -13,7 +13,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Giorgione;
 
-internal class InteractionHandler(
+public class InteractionHandler(
     DiscordSocketClient client,
     InteractionService handler,
     BotConfig config,
