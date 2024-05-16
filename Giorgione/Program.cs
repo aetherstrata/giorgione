@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.Rest;
 using Discord.WebSocket;
 
 using Giorgione;
@@ -43,6 +44,7 @@ builder.Services
         UseCompiledLambda = true
     })
     .AddSingleton<DiscordSocketClient>()
+    .AddSingleton<IRestClientProvider>(x => x.GetRequiredService<DiscordSocketClient>()) //TODO: wait for fix upstream
     .AddSingleton<InteractionService>()
     .AddSingleton<InteractionHandler>()
     .AddHostedService<GiorgioneBot>();
