@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 using Quartz;
 
-namespace Giorgione;
+namespace Giorgione.Workers;
 
 internal class BirthdateChecker(
     DiscordSocketClient client,

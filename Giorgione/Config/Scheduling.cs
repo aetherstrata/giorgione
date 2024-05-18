@@ -1,6 +1,8 @@
 // Copyright (c) Davide Pierotti <d.pierotti@live.it>. Licensed under the GPLv3 Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using Giorgione.Workers;
+
 using Microsoft.Extensions.DependencyInjection;
 
 using Quartz;
@@ -22,15 +24,21 @@ internal static class Scheduling
                 store.UseNewtonsoftJsonSerializer();
             });
 
-            var bcJobKey = JobKey.Create(nameof(BirthdateChecker));
+            config.AddJob<BirthdateChecker>(job => job
+                .WithIdentity(nameof(BirthdateChecker))
+                .WithDescription("Check for birthdays occurring on this day of the year"));
 
-            config.AddJob<BirthdateChecker>(bcJobKey);
             config.AddTrigger(trigger => trigger
-                .ForJob(bcJobKey)
+                .WithIdentity("every-midnight")
+                .WithDescription("Trigger a background task everyday at midnight")
+                .ForJob(nameof(BirthdateChecker))
                 .WithCronSchedule(CronScheduleBuilder.DailyAtHourAndMinute(0,0)));
         });
 
-        services.AddQuartzHostedService();
+        services.AddQuartzHostedService(config =>
+        {
+            config.WaitForJobsToComplete = true;
+        });
 
         return services;
     }

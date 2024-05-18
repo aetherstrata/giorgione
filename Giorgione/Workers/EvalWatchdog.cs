@@ -38,10 +38,10 @@ public partial class EvalWatchdog : IHostedService
         _interactionService = interactionService;
     }
 
-    [GeneratedRegex(@"^```\S*\s")]
+    [GeneratedRegex(@"^```\S*\s", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
     private partial Regex beginRegex();
 
-    [GeneratedRegex(@"```$")]
+    [GeneratedRegex(@"```$", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
     private partial Regex endRegex();
 
     public Task StartAsync(CancellationToken cancellationToken)
