@@ -28,8 +28,8 @@ internal class BirthdateChecker(
 
         var results = await db.Users
             .Where(user => user.Birthday.HasValue &&
-                           user.Birthday.Value.Day == DateTime.UtcNow.Day &&
-                           user.Birthday.Value.Month == DateTime.UtcNow.Month)
+                           user.Birthday.Value.Day == DateTime.Now.Day &&
+                           user.Birthday.Value.Month == DateTime.Now.Month)
             .ToListAsync();
 
         logger.LogDebug("Found {Count} users", results.Count);
