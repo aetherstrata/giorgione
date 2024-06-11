@@ -47,10 +47,13 @@ public class Utilities : InteractionModuleBase<SocketInteractionContext>
                         .ToString())
                     .WithIsInline(true),
                 new EmbedFieldBuilder()
+                    .WithName("Created On")
+                    .WithValue($"<t:{Context.Guild.CreatedAt.ToUnixTimeSeconds()}>"),
+                new EmbedFieldBuilder()
                     .WithName("Features")
                     .WithValue(Context.Guild.Features.Value),
                 new EmbedFieldBuilder()
-                    .WithName("Experimental features")
+                    .WithName("Experimental Features")
                     .WithValue(string.Join(", ", Context.Guild.Features.Experimental)))
             .Build();
 
