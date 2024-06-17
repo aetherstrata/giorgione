@@ -20,7 +20,7 @@ public class Birthdate(
     ILogger<Birthdate> logger) : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("show", "Show your birthdate")]
-    public Task GetBirthdayAsync()
+    public Task GetBirthdayAsync(IUser? userParam = null)
     {
         try
         {
@@ -28,7 +28,7 @@ public class Birthdate(
 
             using (var db = dbFactory.CreateDbContext())
             {
-                user = db.Find<User>(Context.User.Id);
+                user = db.Users.Find(userParam?.Id ?? Context.User.Id);
             }
 
             return user is null
@@ -94,6 +94,34 @@ public class Birthdate(
         {
             logger.LogError(e, "An error occurred while processing a '/birthday set' command");
             return RespondAsync("An error occurred", ephemeral: true);
+        }
+    }
+
+    [SlashCommand("list", "List all birthday defined in this server")]
+    public async Task BirthdayListAsync()
+    {
+        try
+        {
+            using (var db = dbFactory.CreateDbContext())
+            {
+                var list = await db.Users
+                    .Where(user => user.Birthday.HasValue)
+                    .Select(user => $"{user.Id} - {user.Birthday}")
+                    .ToListAsync();
+
+                var listEmbed = new EmbedBuilder()
+                     .WithColor(Color.Blue)
+                     .WithTitle("Lista dei festeggiati")
+                     .WithDescription(string.Join('\n',list))
+                     .Build();
+
+                await RespondAsync(embed: listEmbed);              
+            }
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while processing a '/birthday list' command");
+            await RespondAsync("An error occurred", ephemeral: true);           
         }
     }
 }
