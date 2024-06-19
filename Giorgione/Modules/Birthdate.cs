@@ -20,20 +20,15 @@ public class Birthdate(
     ILogger<Birthdate> logger) : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("show", "Show your birthdate")]
-    public Task GetBirthdayAsync(IUser? userParam = null)
+    public Task GetBirthdayAsync(IUser? user = null)
     {
         try
         {
-            User? user;
+            using var db = dbFactory.CreateDbContext();
 
-            using (var db = dbFactory.CreateDbContext())
-            {
-                user = db.Users.Find(userParam?.Id ?? Context.User.Id);
-            }
+            var userEntity = db.Users.Find(user?.Id ?? Context.User.Id);
 
-            return user is null
-                ? RespondAsync($"Not set")
-                : RespondAsync($"{user.Birthday}");
+            return RespondAsync(userEntity is null ? "Not set" : $"{userEntity.Birthday}");
         }
         catch (Exception e)
         {
