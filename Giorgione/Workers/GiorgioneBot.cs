@@ -19,14 +19,14 @@ public class GiorgioneBot(
     ILogger<GiorgioneBot> logger)
     : IHostedService
 {
-    Task IHostedService.StartAsync(CancellationToken cancellationToken)
+    async Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
         client.Log += onLog;
         interactionService.Log += onLog;
 
-        return interactionHandler.InitializeAsync()
-            .ContinueWith(task => client.LoginAsync(TokenType.Bot, config.Token), cancellationToken)
-            .ContinueWith(task => client.StartAsync(), cancellationToken);
+        await interactionHandler.InitializeAsync();
+        await client.LoginAsync(TokenType.Bot, config.Token);
+        await client.StartAsync();
     }
 
     Task IHostedService.StopAsync(CancellationToken cancellationToken)

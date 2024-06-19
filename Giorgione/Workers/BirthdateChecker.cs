@@ -37,8 +37,9 @@ internal class BirthdateChecker(
         if (results.Count > 0)
         {
             var channel = (ITextChannel) client.GetGuild(config.GuildId).GetChannel(712271135021989938);
+            string userMentions = string.Join(' ', results.Select(user => $"<@{user.Id}>"));
 
-            await channel.SendMessageAsync($"Auguri a {string.Join(' ',results.Select(user => $"<@{user.Id}>"))}!");
+            await channel.SendMessageAsync($"Auguri a {userMentions}!");
         }
     }
 }
