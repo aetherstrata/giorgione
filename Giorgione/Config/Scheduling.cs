@@ -13,6 +13,8 @@ internal static class Scheduling
 {
     internal static IServiceCollection AddScheduling(this IServiceCollection services, string? connectionString)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
+
         services.AddQuartz(config =>
         {
             config.SchedulerName = "JobScheduler";
@@ -20,7 +22,7 @@ internal static class Scheduling
             config.UsePersistentStore(store =>
             {
                 store.UseProperties = true;
-                store.UsePostgres(connectionString ?? throw new InvalidOperationException("Could not read Quartz's connection string"));
+                store.UsePostgres(connectionString);
                 store.UseNewtonsoftJsonSerializer();
             });
 

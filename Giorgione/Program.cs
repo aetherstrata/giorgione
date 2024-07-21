@@ -38,6 +38,7 @@ builder.Services
         DefaultRetryMode = RetryMode.AlwaysFail,
         AuditLogCacheSize = 15,
         MessageCacheSize = 50,
+        AlwaysDownloadUsers = true
     })
     .AddSingleton(new InteractionServiceConfig
     {
@@ -52,5 +53,4 @@ builder.Services
 
 var host = builder.Build();
 
-await host.StartAsync();
-await host.WaitForShutdownAsync();
+await host.RunAsync();
