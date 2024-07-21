@@ -8,11 +8,12 @@ using Discord.Interactions;
 
 using Giorgione.Config;
 
-using Serilog;
+using Microsoft.Extensions.Logging;
 
 namespace Giorgione.Modules;
 
-public partial class Starboard(IHttpClientFactory clientFactory, BotConfig config) : InteractionModuleBase<SocketInteractionContext>
+public partial class Starboard(IHttpClientFactory clientFactory, ILogger<Starboard> logger, BotConfig config)
+    : BotModule(logger)
 {
     private static readonly Random random = new();
     private static readonly Regex regex = urlRegex();
@@ -46,13 +47,15 @@ public partial class Starboard(IHttpClientFactory clientFactory, BotConfig confi
             return;
         }
 
+        await DeferAsync(ephemeral: true);
+
         var embedColor = getRandomColor();
 
         var (imgUrls, attachments) = checkUrls(userMessage);
 
         string cleanMessage = stripImgAttachments(userMessage, imgUrls);
 
-        string iconUrl = userMessage.Author.GetAvatarUrl() ?? userMessage.Author.GetDefaultAvatarUrl();
+        string iconUrl = userMessage.Author.GetDisplayAvatarUrl();
 
         var mainContent = new EmbedBuilder()
             .WithColor(embedColor)
@@ -104,9 +107,9 @@ public partial class Starboard(IHttpClientFactory clientFactory, BotConfig confi
             });
         }
 
-        Log.Information("Starboard :: Message <{MessageId}> has been starred", message.Id);
+        Logger.LogInformation("Starboard :: Message <{MessageId}> has been starred", message.Id);
 
-        await RespondAsync("Il messaggio è stato stellinato!", ephemeral: true);
+        await ModifyOriginalResponseAsync(properties => properties.Content = "Il messaggio è stato stellinato!");
     }
 
     private string stripImgAttachments(IMessage message, ICollection<string> imgUrls)
@@ -126,8 +129,8 @@ public partial class Starboard(IHttpClientFactory clientFactory, BotConfig confi
 
     private (List<string> imgUrls, List<string> attachments) checkUrls(IMessage message)
     {
-        var imgUrls = new List<string>();
-        var attachments = new List<string>();
+        List<string> imgUrls = [];
+        List<string> attachments = [];
 
         Parallel.ForEach(message.Attachments.Select(a => a.Url), url =>
         {
@@ -145,17 +148,15 @@ public partial class Starboard(IHttpClientFactory clientFactory, BotConfig confi
         using var request = new HttpRequestMessage(HttpMethod.Head, url);
         using var response = client.Send(request);
 
-        if (response.IsSuccessStatusCode)
-        {
-            return response.Content.Headers.ContentType?.MediaType?.StartsWith("image/") ?? false;
-        }
-
-        return false;
+        return response.IsSuccessStatusCode &&
+               (response.Content.Headers.ContentType?.MediaType?.StartsWith("image/") ?? false);
     }
 
     private static Color getRandomColor()
     {
-        return new Color((byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256));
+        const int maxValue = (int) Color.MaxDecimalValue;
+
+        return new Color((uint) random.Next(maxValue));
     }
 
     [GeneratedRegex(@"(http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)")]

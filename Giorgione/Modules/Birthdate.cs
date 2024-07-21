@@ -17,8 +17,10 @@ namespace Giorgione.Modules;
 [Group("birthday", "Set your birthday and check upcoming ones")]
 public class Birthdate(
     IDbContextFactory<UsersDbContext> dbFactory,
-    ILogger<Birthdate> logger) : InteractionModuleBase<SocketInteractionContext>
+    ILogger<Birthdate> logger) : BotModule(logger)
 {
+    private static readonly string[] formats = ["yyyy-M-d", "M-d", "d-M-yyyy", "d/M", "yyyy/M/d", "d/M/yyyy"];
+
     [SlashCommand("show", "Show your birthdate")]
     public Task GetBirthdayAsync(IUser? user = null)
     {
@@ -32,8 +34,8 @@ public class Birthdate(
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Could not retrieve birthday data for {UserId}", Context.User.Id);
-            return RespondAsync("Errore");
+            Logger.LogError(e, "Could not retrieve birthday data for {UserId}", Context.User.Id);
+            return RespondAsync("An error occurred.");
         }
     }
 
@@ -44,24 +46,24 @@ public class Birthdate(
         {
             User? user;
 
-            var date = DateOnly.ParseExact(birthday, ["yyyy-M-d", "M-d", "d-M-yyyy", "d/M", "yyyy/M/d", "d/M/yyyy"], CultureInfo.InvariantCulture);
+            var date = DateOnly.ParseExact(birthday, formats, CultureInfo.InvariantCulture);
 
             using (var db = dbFactory.CreateDbContext())
             {
                 user = db.Users.Find(Context.User.Id);
 
-                if (user is null)
+                if (user is not null)
+                {
+                    user.Birthday = date;
+                    db.Users.Update(user);
+                }
+                else
                 {
                     user = new User(Context.User.Id)
                     {
                         Birthday = date
                     };
-                    db.Add(user);
-                }
-                else
-                {
-                    user.Birthday = date;
-                    db.Update(user);
+                    db.Users.Add(user);
                 }
 
                 db.SaveChanges();
@@ -72,23 +74,30 @@ public class Birthdate(
                 .WithDescription($"Your birthday has been set to {user.Birthday.Value.Day}/{user.Birthday.Value.Month}")
                 .Build();
 
+            Logger.LogDebug("{UserId} has set its birthday to {Month}-{Day}", user.Id, user.Birthday.Value.Month, user.Birthday.Value.Day);
+
             return RespondAsync(embed: embed);
         }
         catch (FormatException e)
         {
-            logger.LogError(e, "An error occurred while processing a '/birthday set' command");
+            Logger.LogError(e, "An error occurred while processing a '/birthday set' command");
 
             var formatEmbed = new EmbedBuilder()
                 .WithColor(Color.Red)
                 .WithTitle("Format error")
-                .WithDescription("The birthdate does not have a valid format.\nValid formats are:\n- `YYYY-M-D` | `M-D` | `D-M-YYYY`\n- `YYYY/M/D` | `M/D` | `D/M/YYYY`")
+                .WithDescription("""
+                                 The birthdate does not have a valid format.
+                                 Valid formats are:
+                                 - `YYYY-M-D` | `M-D` | `D-M-YYYY`
+                                 - `YYYY/M/D` | `M/D` | `D/M/YYYY`
+                                 """)
                 .Build();
 
             return RespondAsync(embed: formatEmbed);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "An error occurred while processing a '/birthday set' command");
+            Logger.LogError(e, "An error occurred while processing a '/birthday set' command");
             return RespondAsync("An error occurred", ephemeral: true);
         }
     }
@@ -115,7 +124,7 @@ public class Birthdate(
         }
         catch (Exception e)
         {
-            logger.LogError(e, "An error occurred while processing a '/birthday list' command");
+            Logger.LogError(e, "An error occurred while processing a '/birthday list' command");
             await RespondAsync("An error occurred", ephemeral: true);
         }
     }
