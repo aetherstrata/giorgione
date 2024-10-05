@@ -24,10 +24,9 @@ builder.Services
     .AddScheduling(builder.Configuration.GetConnectionString("QuartzContext"))
     .AddSingleton(builder.Configuration.GetSection("BotConfig").Get<BotConfig>()
                   ?? throw new InvalidOperationException("Could not read the bot configuration"))
-    .AddDbContextFactory<UsersDbContext>(db =>
+    .AddDbContextFactory<AppDbContext>(db =>
     {
-        db.UseNpgsql(builder.Configuration.GetConnectionString("ApplicationContext")
-                     ?? throw new InvalidOperationException("Could not read EF database connection string"));
+        db.UseNpgsql(builder.Configuration.GetConnectionString("ApplicationContext"));
     })
     .AddSingleton(new DiscordSocketConfig
     {

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Giorgione.Modules;
 
-public class Moderation(ILogger<Moderation> logger) : BotModule(logger)
+public class ModerationModule(ILogger<ModerationModule> logger) : BotModule(logger)
 {
     [RequireUserPermission(GuildPermission.BanMembers)]
     [RequireBotPermission(GuildPermission.BanMembers)]

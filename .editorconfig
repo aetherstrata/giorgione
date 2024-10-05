@@ -35,9 +35,6 @@ dotnet_naming_style.all_lower.word_separator = _
 dotnet_naming_style.underscore_camelcase.capitalization = camel_case
 dotnet_naming_style.underscore_camelcase.required_prefix = _
 
-#Namespace declaration
-csharp_style_namespace_declarations = file_scoped:warning
-
 #PascalCase for public and protected members
 dotnet_naming_symbols.public_members.applicable_accessibilities = public,internal,protected,protected_internal,private_protected
 dotnet_naming_symbols.public_members.applicable_kinds = property,method,field,event

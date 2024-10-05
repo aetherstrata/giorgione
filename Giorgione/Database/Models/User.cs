@@ -5,10 +5,24 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Giorgione.Database.Models;
 
+/// <summary>
+/// Bot user model
+/// </summary>
+/// <param name="id">The Discord ID of the user</param>
 public sealed class User(ulong id)
 {
-    [Key]
+    /// The Discord ID of the user
     public ulong Id { get; init; } = id;
 
-    public DateOnly? Birthday { get; set; }
+    /// <summary>
+    /// The user birthdate
+    /// </summary>
+    /// <remarks>To see how this property is persisted, see <see cref="BirthdayRepresentation"/></remarks>
+    public Birthdate Birthdate
+    {
+        get => BirthdayRepresentation.ToBirthdate();
+        set => BirthdayRepresentation = value.ToRepresentation();
+    }
+
+    public DateOnly? BirthdayRepresentation { get; private set; }
 }

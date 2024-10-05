@@ -18,7 +18,7 @@ internal class BirthdateChecker(
     DiscordSocketClient client,
     BotConfig config,
     ILogger<BirthdateChecker> logger,
-    IDbContextFactory<UsersDbContext> dbFactory) : IJob
+    IDbContextFactory<AppDbContext> dbFactory) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
@@ -27,9 +27,9 @@ internal class BirthdateChecker(
         await using var db = await dbFactory.CreateDbContextAsync();
 
         var results = await db.Users
-            .Where(user => user.Birthday.HasValue &&
-                           user.Birthday.Value.Day == DateTime.Now.Day &&
-                           user.Birthday.Value.Month == DateTime.Now.Month)
+            .Where(user => user.BirthdayRepresentation != null &&
+                           user.BirthdayRepresentation.Value.Day == DateTime.Now.Day &&
+                           user.BirthdayRepresentation.Value.Month == DateTime.Now.Month)
             .ToListAsync();
 
         logger.LogDebug("Found {Count} users", results.Count);

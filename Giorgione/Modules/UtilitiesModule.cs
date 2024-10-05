@@ -6,7 +6,7 @@ using Discord.Interactions;
 
 namespace Giorgione.Modules;
 
-public class Utilities : InteractionModuleBase<SocketInteractionContext>
+public class UtilitiesModule : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("ping", "Controlla se Giorgione è in casa")]
     public Task PingAsync()
@@ -43,7 +43,9 @@ public class Utilities : InteractionModuleBase<SocketInteractionContext>
                 new EmbedFieldBuilder()
                     .WithName("Online")
                     .WithValue(Context.Guild.Users
-                        .Count(u => !u.IsBot && u.Status != UserStatus.Offline && u.Status != UserStatus.Invisible)
+                        .Count(static u => !u.IsBot &&
+                                           u.Status != UserStatus.Offline &&
+                                           u.Status != UserStatus.Invisible)
                         .ToString())
                     .WithIsInline(true),
                 new EmbedFieldBuilder()

@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Giorgione.Migrations
 {
-    [DbContext(typeof(UsersDbContext))]
+    [DbContext(typeof(AppDbContext))]
     [Migration("20240514133821_InitialCreate")]
     partial class InitialCreate
     {

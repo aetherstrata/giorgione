@@ -15,8 +15,7 @@ public static class DiscordExtensions
     /// <summary>
     /// Respond to the interaction with the error of the request
     /// </summary>
-    public static Task RespondRequestError<T>(this T module, HttpException ex)
-        where T : BotModule
+    public static Task RespondRequestError<T>(this T module, HttpException ex) where T : BotModule
     {
         var embed = new EmbedBuilder()
             .WithTitle("Request Error")
@@ -30,8 +29,7 @@ public static class DiscordExtensions
     /// <summary>
     /// Respond to the interaction with a generic error message
     /// </summary>
-    public static Task RespondUnhandledError<T>(this T module, Exception ex)
-        where T : BotModule
+    public static Task RespondUnhandledError<T>(this T module, Exception ex) where T : BotModule
     {
         var embed = new EmbedBuilder()
             .WithTitle("Internal Error")
@@ -42,8 +40,10 @@ public static class DiscordExtensions
         return module.Context.Interaction.RespondAsync(embed: embed);
     }
 
-    public static async Task TryRequestAsync<T>(this T module, Func<T, Task> taskFactory, [CallerMemberName] string? callerName = null)
-        where T : BotModule
+    public static async Task TryRequestAsync<T>(
+        this T module,
+        Func<T, Task> taskFactory,
+        [CallerMemberName] string? callerName = null) where T : BotModule
     {
         try
         {
@@ -63,8 +63,11 @@ public static class DiscordExtensions
         }
     }
 
-    public static async Task<TResult?> TryRequestAsync<T,TResult>(this T module, Func<T, Task<TResult>> taskFactory, TResult? fallback = default, [CallerMemberName] string? callerName = null)
-        where T : BotModule
+    public static async Task<TResult?> TryRequestAsync<T, TResult>(
+        this T module,
+        Func<T, Task<TResult>> taskFactory,
+        TResult? fallback = default,
+        [CallerMemberName] string? callerName = null) where T : BotModule
     {
         try
         {

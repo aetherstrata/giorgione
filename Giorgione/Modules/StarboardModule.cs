@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Giorgione.Modules;
 
-public partial class Starboard(IHttpClientFactory clientFactory, ILogger<Starboard> logger, BotConfig config)
+public partial class StarboardModule(IHttpClientFactory clientFactory, ILogger<StarboardModule> logger, BotConfig config)
     : BotModule(logger)
 {
     private static readonly Random random = new();
