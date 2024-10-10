@@ -9,6 +9,7 @@ using Discord.WebSocket;
 
 using Giorgione.Config;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Giorgione;
@@ -26,7 +27,10 @@ public class InteractionHandler(
         client.Ready += OnReady;
 
         // Add the public modules that inherit InteractionModuleBase<T> to the InteractionService
-        await handler.AddModulesAsync(Assembly.GetEntryAssembly(), services);
+        using (var scope = services.CreateScope())
+        {
+            await handler.AddModulesAsync(Assembly.GetEntryAssembly(), scope.ServiceProvider);
+        }
 
         // Process the InteractionCreated payloads to execute Interactions commands
         client.InteractionCreated += OnInteractionCreated;

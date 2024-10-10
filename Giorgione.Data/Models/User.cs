@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Davide Pierotti <d.pierotti@live.it>. Licensed under the GPLv3 Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System.ComponentModel.DataAnnotations;
-
-namespace Giorgione.Database.Models;
+namespace Giorgione.Data.Models;
 
 /// <summary>
 /// Bot user model
@@ -24,5 +22,7 @@ public sealed class User(ulong id)
         set => BirthdayRepresentation = value.ToRepresentation();
     }
 
-    public DateOnly? BirthdayRepresentation { get; private set; }
+    public string ToMentionString() => $"<@{Id}>";
+
+    internal DateOnly? BirthdayRepresentation { get; private set; }
 }

@@ -5,7 +5,8 @@ using Discord;
 using Discord.WebSocket;
 
 using Giorgione.Config;
-using Giorgione.Database;
+using Giorgione.Data;
+using Giorgione.Data.Extensions;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -27,9 +28,7 @@ internal class BirthdateChecker(
         await using var db = await dbFactory.CreateDbContextAsync();
 
         var results = await db.Users
-            .Where(user => user.BirthdayRepresentation != null &&
-                           user.BirthdayRepresentation.Value.Day == DateTime.Now.Day &&
-                           user.BirthdayRepresentation.Value.Month == DateTime.Now.Month)
+            .CelebratingBirthday()
             .ToListAsync();
 
         logger.LogDebug("Found {Count} users", results.Count);
@@ -37,7 +36,7 @@ internal class BirthdateChecker(
         if (results.Count > 0)
         {
             var channel = (ITextChannel) client.GetGuild(config.GuildId).GetChannel(712271135021989938);
-            string userMentions = string.Join(' ', results.Select(user => $"<@{user.Id}>"));
+            string userMentions = string.Join(' ', results.Select(user => user.ToMentionString()));
 
             await channel.SendMessageAsync($"Auguri a {userMentions}!");
         }

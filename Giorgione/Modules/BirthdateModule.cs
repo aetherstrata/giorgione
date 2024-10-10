@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Davide Pierotti <d.pierotti@live.it>. Licensed under the GPLv3 Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System.Globalization;
-
 using Discord.Interactions;
 using Discord;
 
-using Giorgione.Database;
-using Giorgione.Database.Models;
+using Giorgione.Data;
+using Giorgione.Data.Extensions;
+using Giorgione.Data.Models;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -15,9 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace Giorgione.Modules;
 
 [Group("birthday", "Set your birthday and check upcoming ones")]
-public class BirthdateModule(
-    IDbContextFactory<AppDbContext> dbFactory,
-    ILogger<BirthdateModule> logger) : BotModule(logger)
+public class BirthdateModule(AppDbContext db, ILogger<BirthdateModule> logger) : BotModule(logger)
 {
     [SlashCommand("show", "Show your birthdate")]
     public async Task GetBirthdayAsync(IUser? user = null)
@@ -26,12 +23,10 @@ public class BirthdateModule(
 
         try
         {
-            await using var db = await dbFactory.CreateDbContextAsync();
-
             var userEntity = await db.Users.FindAsync(id);
             string message = userEntity is null
                 ? "User was not found in the database"
-                : userEntity.Birthdate.ToMessageString();
+                : userEntity.Birthdate.ToShortString();
 
             await RespondAsync(message);
         }
@@ -49,26 +44,23 @@ public class BirthdateModule(
 
         try
         {
-            await using (var db = await dbFactory.CreateDbContextAsync())
+            var user = await db.Users.FindAsync(Context.User.Id);
+
+            if (user is not null)
             {
-                var user = await db.Users.FindAsync(Context.User.Id);
-
-                if (user is not null)
-                {
-                    user.Birthdate = birthdate;
-                    db.Users.Update(user);
-                }
-                else
-                {
-                    user = new User(Context.User.Id)
-                    {
-                        Birthdate = birthdate
-                    };
-                    db.Users.Add(user);
-                }
-
-                await db.SaveChangesAsync();
+                user.Birthdate = birthdate;
+                db.Users.Update(user);
             }
+            else
+            {
+                user = new User(Context.User.Id)
+                {
+                    Birthdate = birthdate
+                };
+                db.Users.Add(user);
+            }
+
+            await db.SaveChangesAsync();
 
             var embed = new EmbedBuilder()
                 .WithColor(Color.Teal)
@@ -108,11 +100,10 @@ public class BirthdateModule(
     {
         try
         {
-            await using var db = await dbFactory.CreateDbContextAsync();
 
             var list = await db.Users
-                .Where(user => user.BirthdayRepresentation != null)
-                .Select(user => $"<@{user.Id}> - {user.Birthdate.ToMessageString()}")
+                .WithBirthday()
+                .Select(static user => $"<@{user.Id}> - {user.Birthdate.ToShortString()}")
                 .ToListAsync();
 
             var listEmbed = new EmbedBuilder()

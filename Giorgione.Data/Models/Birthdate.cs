@@ -3,7 +3,7 @@
 
 using System.Globalization;
 
-namespace Giorgione.Database.Models;
+namespace Giorgione.Data.Models;
 
 /// Base model for birthdates
 public abstract record Birthdate
@@ -31,7 +31,7 @@ public abstract record Birthdate
     /// Human-readable representation of this birthdate.
     /// </summary>
     /// <returns>the formatted date</returns>
-    public abstract string ToMessageString();
+    public abstract string ToShortString();
 }
 
 /// <summary>
@@ -41,7 +41,7 @@ public abstract record Birthdate
 /// <param name="Date">The birthday</param>
 public sealed record FullDate(DateOnly Date) : Birthdate
 {
-    public override string ToMessageString() => Date.ToString("dd/MM/yyyy");
+    public override string ToShortString() => Date.ToString("dd/MM/yyyy");
 }
 
 /// <summary>
@@ -52,7 +52,7 @@ public sealed record FullDate(DateOnly Date) : Birthdate
 public sealed record MonthDay(int Month, int Day) : Birthdate
 {
     /// <inheritdoc />
-    public override string ToMessageString() => $"{Month:D2}/{Day:D2}";
+    public override string ToShortString() => $"{Month:D2}/{Day:D2}";
 }
 
 /// <summary>
@@ -61,7 +61,7 @@ public sealed record MonthDay(int Month, int Day) : Birthdate
 public sealed record NotSet : Birthdate
 {
     /// <inheritdoc />
-    public override string ToMessageString() => "Not set";
+    public override string ToShortString() => "Not set";
 }
 
 public static class BirthdateExtensions
@@ -73,7 +73,7 @@ public static class BirthdateExtensions
         _ => new FullDate(date.Value)
     };
 
-    public static DateOnly? ToRepresentation(this Birthdate birthdate) => birthdate switch
+    internal static DateOnly? ToRepresentation(this Birthdate birthdate) => birthdate switch
     {
         NotSet => null,
         FullDate fullDate => fullDate.Date,

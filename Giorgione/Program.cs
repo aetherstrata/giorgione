@@ -5,7 +5,7 @@ using Discord.WebSocket;
 
 using Giorgione;
 using Giorgione.Config;
-using Giorgione.Database;
+using Giorgione.Data;
 using Giorgione.Workers;
 
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +13,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+using Serilog.Extensions.Logging;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -22,12 +24,13 @@ builder.Services
     .AddHttpClient()
     .AddSerilog()
     .AddScheduling(builder.Configuration.GetConnectionString("QuartzContext"))
+    .AddDbContext<AppDbContext>(db =>
+    {
+        db.UseNpgsql(builder.Configuration.GetConnectionString("ApplicationContext"))
+            .EnableDetailedErrors();
+    })
     .AddSingleton(builder.Configuration.GetSection("BotConfig").Get<BotConfig>()
                   ?? throw new InvalidOperationException("Could not read the bot configuration"))
-    .AddDbContextFactory<AppDbContext>(db =>
-    {
-        db.UseNpgsql(builder.Configuration.GetConnectionString("ApplicationContext"));
-    })
     .AddSingleton(new DiscordSocketConfig
     {
         GatewayIntents = GatewayIntents.AllUnprivileged |
@@ -37,11 +40,12 @@ builder.Services
         DefaultRetryMode = RetryMode.AlwaysFail,
         AuditLogCacheSize = 15,
         MessageCacheSize = 50,
-        AlwaysDownloadUsers = true
+        AlwaysDownloadUsers = true,
     })
     .AddSingleton(new InteractionServiceConfig
     {
-        UseCompiledLambda = true
+        UseCompiledLambda = true,
+        AutoServiceScopes = true
     })
     .AddSingleton<DiscordSocketClient>()
     .AddSingleton<IRestClientProvider>(x => x.GetRequiredService<DiscordSocketClient>()) //TODO: wait for upstream fix

@@ -6,6 +6,8 @@ using System.Runtime.CompilerServices;
 using Discord;
 using Discord.Net;
 
+using Giorgione.Modules;
+
 using Microsoft.Extensions.Logging;
 
 namespace Giorgione;

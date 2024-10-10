@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Davide Pierotti <d.pierotti@live.it>. Licensed under the GPLv3 Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using Giorgione.Database.Models;
+using Giorgione.Data.Models;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace Giorgione.Database;
+namespace Giorgione.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {

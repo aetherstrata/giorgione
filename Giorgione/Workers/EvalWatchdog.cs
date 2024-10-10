@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.Text;
-using System.Text.RegularExpressions;
 
 using Discord;
 using Discord.Interactions;
@@ -17,26 +16,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Giorgione.Workers;
 
-public partial class EvalWatchdog : IHostedService
+public class EvalWatchdog(
+    DiscordSocketClient client,
+    InteractionService interactionService,
+    BotConfig config,
+    ILogger<EvalWatchdog> logger)
+    : IHostedService
 {
     private const string command_name = "g.eval";
 
-    private readonly DiscordSocketClient _client;
-    private readonly InteractionService _interactionService;
-    private readonly BotConfig _config;
-    private readonly ILogger<EvalWatchdog> _logger;
-
-    public EvalWatchdog(
-        DiscordSocketClient client,
-        InteractionService interactionService,
-        BotConfig config,
-        ILogger<EvalWatchdog> logger)
-    {
-        _config = config;
-        _logger = logger;
-        _client = client;
-        _interactionService = interactionService;
-    }
+    private readonly DiscordSocketClient _client = client;
+    private readonly InteractionService _interactionService = interactionService;
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
@@ -54,7 +44,7 @@ public partial class EvalWatchdog : IHostedService
 
     private Task eval(SocketMessage arg)
     {
-        if (arg.Author.Id != _config.SuperuserId || !arg.Content.StartsWith(command_name, StringComparison.Ordinal))
+        if (arg.Author.Id != config.SuperuserId || !arg.Content.StartsWith(command_name, StringComparison.Ordinal))
         {
             return Task.CompletedTask;
         }
@@ -95,7 +85,7 @@ public partial class EvalWatchdog : IHostedService
             {
                 string diag = string.Join('\n', e.Diagnostics);
 
-                _logger.LogError(e, "Compilation error in eval command");
+                logger.LogError(e, "Compilation error in eval command");
 
                 var embed = new EmbedBuilder()
                     .WithColor(Color.Red)

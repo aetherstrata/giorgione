@@ -5,7 +5,7 @@ using Discord.Interactions;
 
 using Microsoft.Extensions.Logging;
 
-namespace Giorgione;
+namespace Giorgione.Modules;
 
 public class BotModule(ILogger<BotModule> logger) : InteractionModuleBase<SocketInteractionContext>
 {

@@ -42,4 +42,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Giorgione.Data\Giorgione.Data.csproj" />
+  </ItemGroup>
+
 </Project>

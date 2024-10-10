@@ -4,9 +4,11 @@
 using Discord;
 using Discord.Interactions;
 
+using Microsoft.Extensions.Logging;
+
 namespace Giorgione.Modules;
 
-public class UtilitiesModule : InteractionModuleBase<SocketInteractionContext>
+public class UtilitiesModule(ILogger<UtilitiesModule> logger) : BotModule(logger)
 {
     [SlashCommand("ping", "Controlla se Giorgione è in casa")]
     public Task PingAsync()

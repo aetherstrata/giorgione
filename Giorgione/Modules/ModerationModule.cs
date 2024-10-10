@@ -3,7 +3,6 @@
 
 using Discord;
 using Discord.Interactions;
-using Discord.Rest;
 
 using Microsoft.Extensions.Logging;
 
