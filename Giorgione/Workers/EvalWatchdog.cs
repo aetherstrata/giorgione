@@ -38,12 +38,6 @@ public partial class EvalWatchdog : IHostedService
         _interactionService = interactionService;
     }
 
-    [GeneratedRegex(@"^```\S*\s", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
-    private partial Regex beginRegex();
-
-    [GeneratedRegex(@"```$", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
-    private partial Regex endRegex();
-
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _client.MessageReceived += eval;
@@ -67,16 +61,11 @@ public partial class EvalWatchdog : IHostedService
 
         Task.Run(async () =>
         {
-            using var typing = arg.Channel.EnterTypingState();
-
-            string code = arg.Content[command_name.Length..].Trim();
-
-            code = beginRegex().Replace(code, string.Empty);
-            code = endRegex().Replace(code, string.Empty);
+            var typing = arg.Channel.EnterTypingState();
 
             try
             {
-                object? o = await CSharpScript.EvaluateAsync(code,
+                object? o = await CSharpScript.EvaluateAsync(cleanMessage(arg.Content),
                     globals: new EvalContext(this),
                     globalsType: typeof(EvalContext),
                     options: ScriptOptions.Default
@@ -97,14 +86,14 @@ public partial class EvalWatchdog : IHostedService
                 }
                 else
                 {
-                    var stream = new MemoryStream(Encoding.UTF8.GetBytes(result));
+                    using var stream = new MemoryStream(Encoding.UTF8.GetBytes(result));
 
                     await arg.Channel.SendFileAsync(stream, "out.txt");
                 }
             }
             catch (CompilationErrorException e)
             {
-                string diag = string.Join(Environment.NewLine, e.Diagnostics);
+                string diag = string.Join('\n', e.Diagnostics);
 
                 _logger.LogError(e, "Compilation error in eval command");
 
@@ -116,9 +105,26 @@ public partial class EvalWatchdog : IHostedService
 
                 await arg.Channel.SendMessageAsync(embed: embed);
             }
+            finally
+            {
+                typing.Dispose();
+            }
         });
 
         return Task.CompletedTask;
+    }
+
+    private static string cleanMessage(string message)
+    {
+        var msgSpan = message[command_name.Length..].AsSpan().Trim();
+
+        // Remove code block quotes
+        if (msgSpan.StartsWith("```") && msgSpan.EndsWith("```"))
+        {
+            msgSpan = msgSpan[msgSpan.IndexOf('\n')..^3];
+        }
+
+        return msgSpan.ToString();
     }
 
     // ReSharper disable once MemberCanBePrivate.Global
