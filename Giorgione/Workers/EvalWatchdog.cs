@@ -104,17 +104,17 @@ public class EvalWatchdog(
         return Task.CompletedTask;
     }
 
-    private static string cleanMessage(string message)
+    private static string cleanMessage(ReadOnlySpan<char> message)
     {
-        var msgSpan = message[command_name.Length..].AsSpan().Trim();
+        message = message[command_name.Length..].Trim();
 
         // Remove code block quotes
-        if (msgSpan.StartsWith("```") && msgSpan.EndsWith("```"))
+        if (message.StartsWith("```") && message.EndsWith("```"))
         {
-            msgSpan = msgSpan[msgSpan.IndexOf('\n')..^3];
+            message = message[message.IndexOf('\n')..^3];
         }
 
-        return msgSpan.ToString();
+        return message.ToString();
     }
 
     // ReSharper disable once MemberCanBePrivate.Global
