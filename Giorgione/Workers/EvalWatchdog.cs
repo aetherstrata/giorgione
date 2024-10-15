@@ -60,7 +60,7 @@ public class EvalWatchdog(
                     globalsType: typeof(EvalContext),
                     options: ScriptOptions.Default
                         .WithReferences(typeof(Enumerable).Assembly, typeof(HashSet<int>).Assembly, typeof(Span<char>).Assembly)
-                        .WithImports("System", "System.IO", "System.Linq", "System.Collections.Generic"));
+                        .WithImports("System", "System.IO", "System.Linq", "System.Text", "System.Collections.Generic"));
 
                 string result = o.ToString() ?? "null";
 
