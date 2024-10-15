@@ -5,7 +5,7 @@ using Discord.Interactions;
 using Discord;
 
 using Giorgione.Data;
-using Giorgione.Data.Extensions;
+using Giorgione.Data.Filters;
 using Giorgione.Data.Models;
 
 using Microsoft.EntityFrameworkCore;
@@ -100,9 +100,8 @@ public class BirthdateModule(AppDbContext db, ILogger<BirthdateModule> logger) :
     {
         try
         {
-
             var list = await db.Users
-                .WithBirthday()
+                .Where(UserFilter.HasBirthdate)
                 .Select(static user => $"<@{user.Id}> - {user.Birthdate.ToShortString()}")
                 .ToListAsync();
 

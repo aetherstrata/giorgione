@@ -6,7 +6,7 @@ using Discord.WebSocket;
 
 using Giorgione.Config;
 using Giorgione.Data;
-using Giorgione.Data.Extensions;
+using Giorgione.Data.Filters;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -28,7 +28,7 @@ internal class BirthdateChecker(
         await using var db = await dbFactory.CreateDbContextAsync();
 
         var results = await db.Users
-            .CelebratingBirthday()
+            .Where(UserFilter.ByBirthdate(DateTime.Now))
             .ToListAsync();
 
         logger.LogDebug("Found {Count} users", results.Count);
