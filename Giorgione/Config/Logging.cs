@@ -16,9 +16,13 @@ internal static class Logging
             "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u4}] {Message:lj} <{ThreadId}><{ThreadName}>{NewLine}{Exception}";
 
         var logger = new LoggerConfiguration()
+            .MinimumLevel.Verbose()
+            .MinimumLevel.Override("Quartz", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
             .Enrich.WithThreadId()
             .Enrich.WithThreadName()
-            .WriteTo.Console(LogEventLevel.Debug, outputTemplate)
+            .WriteTo.Console(outputTemplate: outputTemplate)
             .WriteTo.File(AppContext.BaseDirectory + "log-.txt", LogEventLevel.Debug, outputTemplate,
                 rollingInterval: RollingInterval.Day)
             .CreateLogger();
