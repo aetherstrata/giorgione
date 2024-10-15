@@ -38,10 +38,27 @@ public abstract record Birthdate
 /// Complete birthday date
 /// </summary>
 /// <remarks>Includes year, month and day of birth</remarks>
-/// <param name="Date">The birthday</param>
-public sealed record FullDate(DateOnly Date) : Birthdate
+/// <param name="Birthday">The user birthday</param>
+public sealed record FullDate(DateOnly Birthday) : Birthdate
 {
-    public override string ToShortString() => Date.ToString("dd/MM/yyyy");
+    public override string ToShortString() => Birthday.ToString("dd/MM/yyyy");
+
+    /// <summary>
+    /// Get the user age at this point in time.
+    /// </summary>
+    /// <returns>the user age</returns>
+    public int GetAge()
+    {
+        int age = DateTime.Now.Year - Birthday.Year;
+
+        // Account for leap years
+        if (DateTime.Now.Month < Birthday.Month || (DateTime.Now.Month == Birthday.Month && DateTime.Now.Day < Birthday.Day))
+        {
+            age--;
+        }
+
+        return age;
+    }
 }
 
 /// <summary>
@@ -76,7 +93,7 @@ public static class BirthdateExtensions
     internal static DateOnly? ToRepresentation(this Birthdate birthdate) => birthdate switch
     {
         NotSet => null,
-        FullDate fullDate => fullDate.Date,
+        FullDate fullDate => fullDate.Birthday,
         MonthDay monthDay => new DateOnly(1, monthDay.Month, monthDay.Day),
         _ => throw new ArgumentException($"Unknown birthdate kind: {birthdate}")
     };
