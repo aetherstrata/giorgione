@@ -12,13 +12,15 @@ namespace Giorgione.Modules;
 [Group("noise", "For all your noisy needs")]
 public class NoiseModule(ILogger<NoiseModule> logger) : BotModule(logger)
 {
+    private const int seconds = 4;
     private const int channels = 2;
     private const int sample_rate = 48000;
+    private const double amplitude = 0.1;
 
     private static readonly Random random = new();
 
     [SlashCommand("join", "Play white noise in your voice channel.", runMode: RunMode.Async)]
-    public async Task Join(IVoiceChannel? channel = null)
+    public async Task JoinAsync(IVoiceChannel? channel = null)
     {
         channel ??= (Context.User as IGuildUser)?.VoiceChannel;
 
@@ -32,26 +34,25 @@ public class NoiseModule(ILogger<NoiseModule> logger) : BotModule(logger)
 
         var audioClient = await channel.ConnectAsync();
 
-        await using (var discord = audioClient.CreatePCMStream(AudioApplication.Music))
+        await using (var discordStream = audioClient.CreatePCMStream(AudioApplication.Music, channel.Bitrate, seconds))
         {
-            Memory<byte> buffer = new byte[sample_rate * channels * 2].AsMemory(); // s16le = 2 bytes
+            Memory<byte> buffer = new byte[sample_rate * channels * seconds * 2].AsMemory(); // s16le = 2 bytes
 
             while (audioClient.ConnectionState == ConnectionState.Connected)
             {
-                for (int i = 0; i < sample_rate * channels; i++)
+                // Generate noise samples
+                for (int i = 0; i < sample_rate * channels * seconds; i++)
                 {
                     double sample = random.NextDouble() * 2.0 - 1.0;
-                    short pcmValue = (short)(sample * 0.1 * short.MaxValue);
+                    short pcmValue = (short)(sample * amplitude * short.MaxValue);
 
                     // Convert the sample to little-endian
                     buffer.Span[i * 2] = (byte)(pcmValue & 0xFF);
                     buffer.Span[i * 2 + 1] = (byte)((pcmValue >> 8) & 0xFF);
                 }
 
-                await discord.WriteAsync(buffer);
+                await discordStream.WriteAsync(buffer);
             }
         }
-
-        await channel.DisconnectAsync();
     }
 }
