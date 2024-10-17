@@ -5,22 +5,23 @@ namespace Giorgione.Noise;
 
 public class BrownNoiseGenerator(int sampleRate, int seconds) : NoiseGenerator(sampleRate, seconds)
 {
-    private const double beta = 0.022;
+    /// Leaky integrator constant
+    private const double c = 0.99;
 
     /// <inheritdoc />
     public override int Generate(double amplitude)
     {
-        double sample = Tick();
+        double sample = 0.0;
 
-        for (int i = 0; i < Buffer.Length / 2; i++)
+        for (int i = 0; i < Buffer.Length / Depth; i++)
         {
-            sample -= beta * (sample - Tick());
+            sample = c * sample + (1 - c) * Tick();
 
             short pcmValue = (short)(sample * amplitude * short.MaxValue);
 
             // Convert the sample to little-endian
-            Buffer.Span[i * 2] = (byte)(pcmValue & 0xFF);
-            Buffer.Span[i * 2 + 1] = (byte)((pcmValue >> 8) & 0xFF);
+            Buffer.Span[i * Depth] = (byte)(pcmValue & 0xFF);
+            Buffer.Span[i * Depth + 1] = (byte)((pcmValue >> 8) & 0xFF);
         }
 
         return Buffer.Length;

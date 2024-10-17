@@ -85,24 +85,6 @@ dotnet_naming_rule.local_const_camel_case.severity = warning
 dotnet_naming_rule.local_const_camel_case.symbols = local_constants
 dotnet_naming_rule.local_const_camel_case.style = camelcase
 
-#ALL_UPPER for non private constants/static readonly
-dotnet_naming_style.all_upper.capitalization = all_upper
-dotnet_naming_style.all_upper.word_separator = _
-
-dotnet_naming_symbols.public_constants.applicable_accessibilities = public,internal,protected,protected_internal,private_protected
-dotnet_naming_symbols.public_constants.required_modifiers = const
-dotnet_naming_symbols.public_constants.applicable_kinds = field
-dotnet_naming_rule.public_const_all_upper.severity = warning
-dotnet_naming_rule.public_const_all_upper.symbols = public_constants
-dotnet_naming_rule.public_const_all_upper.style = all_upper
-
-dotnet_naming_symbols.public_static_readonly.applicable_accessibilities = public,internal,protected,protected_internal,private_protected
-dotnet_naming_symbols.public_static_readonly.required_modifiers = static,readonly
-dotnet_naming_symbols.public_static_readonly.applicable_kinds = field
-dotnet_naming_rule.public_static_readonly_all_upper.severity = warning
-dotnet_naming_rule.public_static_readonly_all_upper.symbols = public_static_readonly
-dotnet_naming_rule.public_static_readonly_all_upper.style = all_upper
-
 #Roslyn formatting options
 
 #Formatting - indentation options

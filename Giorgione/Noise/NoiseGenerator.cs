@@ -5,23 +5,21 @@ namespace Giorgione.Noise;
 
 public abstract class NoiseGenerator : INoiseGenerator
 {
-    // Discord Audio requires stereo PCM
+    /// Discord Audio requires stereo PCM
     private const int channels = 2;
+
+    /// Samples are quantised with 16 bits | s16le
+    protected const int Depth = 2;
 
     private readonly Random _random = new();
 
     protected readonly Memory<byte> Buffer;
-    protected readonly int SampleRate;
-    protected readonly int Duration;
 
     protected NoiseGenerator(int sampleRate, int seconds)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(seconds);
 
-        Buffer = new byte[sampleRate * seconds * channels * 2].AsMemory(); // s16le = 2 bytes
-
-        SampleRate = sampleRate;
-        Duration = seconds;
+        Buffer = new byte[sampleRate * seconds * channels * Depth].AsMemory();
     }
 
     /// <summary>

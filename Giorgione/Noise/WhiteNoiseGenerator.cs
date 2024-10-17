@@ -8,13 +8,13 @@ public class WhiteNoiseGenerator(int sampleRate, int seconds) : NoiseGenerator(s
     /// <inheritdoc />
     public override int Generate(double amplitude)
     {
-        for (int i = 0; i < Buffer.Length / 2; i++)
+        for (int i = 0; i < Buffer.Length / Depth; i++)
         {
             short pcmValue = (short)(Tick() * amplitude * short.MaxValue);
 
             // Convert the sample to little-endian
-            Buffer.Span[i * 2] = (byte)(pcmValue & 0xFF);
-            Buffer.Span[i * 2 + 1] = (byte)((pcmValue >> 8) & 0xFF);
+            Buffer.Span[i * Depth] = (byte)(pcmValue & 0xFF);
+            Buffer.Span[i * Depth + 1] = (byte)((pcmValue >> 8) & 0xFF);
         }
 
         return Buffer.Length;
