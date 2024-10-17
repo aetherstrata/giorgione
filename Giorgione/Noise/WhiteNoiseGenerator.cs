@@ -3,10 +3,10 @@
 
 namespace Giorgione.Noise;
 
-public class WhiteNoiseGenerator(int sampleRate, int seconds) : NoiseGenerator(sampleRate, seconds)
+public class WhiteNoiseGenerator(int bufferSeconds) : NoiseGenerator(bufferSeconds)
 {
     /// <inheritdoc />
-    public override int Generate(double amplitude)
+    public override ReadOnlyMemory<byte> Generate(double amplitude)
     {
         for (int i = 0; i < Buffer.Length / Depth; i++)
         {
@@ -17,6 +17,6 @@ public class WhiteNoiseGenerator(int sampleRate, int seconds) : NoiseGenerator(s
             Buffer.Span[i * Depth + 1] = (byte)((pcmValue >> 8) & 0xFF);
         }
 
-        return Buffer.Length;
+        return Buffer;
     }
 }

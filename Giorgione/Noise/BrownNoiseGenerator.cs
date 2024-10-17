@@ -3,13 +3,13 @@
 
 namespace Giorgione.Noise;
 
-public class BrownNoiseGenerator(int sampleRate, int seconds) : NoiseGenerator(sampleRate, seconds)
+public class BrownNoiseGenerator(int bufferSeconds) : NoiseGenerator(bufferSeconds)
 {
     /// Leaky integrator constant
     private const double c = 0.99;
 
     /// <inheritdoc />
-    public override int Generate(double amplitude)
+    public override ReadOnlyMemory<byte> Generate(double amplitude)
     {
         double sample = 0.0;
 
@@ -24,6 +24,6 @@ public class BrownNoiseGenerator(int sampleRate, int seconds) : NoiseGenerator(s
             Buffer.Span[i * Depth + 1] = (byte)((pcmValue >> 8) & 0xFF);
         }
 
-        return Buffer.Length;
+        return Buffer;
     }
 }

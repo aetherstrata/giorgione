@@ -6,15 +6,10 @@ namespace Giorgione.Noise;
 public interface INoiseGenerator
 {
     /// <summary>
-    /// Get the PCM samples buffer in memory.
-    /// </summary>
-    /// <returns>the buffer to read from.</returns>
-    ReadOnlyMemory<byte> GetBuffer();
-
-    /// <summary>
-    /// Generate noise samples and place them in the memory buffer.
+    /// Generate noise samples at the desired amplitude.
     /// </summary>
     /// <param name="amplitude">The noise amplitude between <c>0.0</c> and <c>1.0</c></param>
-    /// <returns>the amount of bytes written.</returns>
-    int Generate(double amplitude);
+    /// <returns>The <see cref="Memory{T}"/> buffer of the samples.</returns>
+    /// <remarks>The format is 16bit 48kHz Stereo PCM.</remarks>
+    ReadOnlyMemory<byte> Generate(double amplitude);
 }

@@ -13,12 +13,11 @@ public static class NoiseExtensions
     {
         await using var discordStream = client.CreatePCMStream(AudioApplication.Music);
 
-        var noise = new WhiteNoiseGenerator(48000, 4);
+        var noise = new WhiteNoiseGenerator(4);
 
         while (client.ConnectionState == ConnectionState.Connected)
         {
-            noise.Generate(amplitude);
-            await discordStream.WriteAsync(noise.GetBuffer(), ct);
+            await discordStream.WriteAsync(noise.Generate(amplitude), ct);
         }
     }
 
@@ -26,12 +25,11 @@ public static class NoiseExtensions
     {
         await using var discordStream = client.CreatePCMStream(AudioApplication.Music);
 
-        var noise = new BrownNoiseGenerator(48000, 4);
+        var noise = new BrownNoiseGenerator(4);
 
         while (client.ConnectionState == ConnectionState.Connected)
         {
-            noise.Generate(amplitude);
-            await discordStream.WriteAsync(noise.GetBuffer(), ct);
+            await discordStream.WriteAsync(noise.Generate(amplitude), ct);
         }
     }
 }
