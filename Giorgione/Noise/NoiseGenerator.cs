@@ -11,12 +11,17 @@ public abstract class NoiseGenerator : INoiseGenerator
     private readonly Random _random = new();
 
     protected readonly Memory<byte> Buffer;
+    protected readonly int SampleRate;
+    protected readonly int Duration;
 
     protected NoiseGenerator(int sampleRate, int seconds)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(seconds);
 
         Buffer = new byte[sampleRate * seconds * channels * 2].AsMemory(); // s16le = 2 bytes
+
+        SampleRate = sampleRate;
+        Duration = seconds;
     }
 
     /// <summary>
