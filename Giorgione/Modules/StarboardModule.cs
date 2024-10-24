@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Giorgione.Modules;
 
+[Group("starboard", "Manage the starboard")]
 public partial class StarboardModule(
     AppDbContext db,
     HttpClient http,
@@ -24,46 +25,42 @@ public partial class StarboardModule(
     private static readonly Random random = new();
     private static readonly Regex regex = urlRegex();
 
-    [Group("starboard", "Manage the starboard")]
-    public class TextCommands(AppDbContext db, ILogger<StarboardModule> logger) : BotModule(logger)
+    [RequireUserPermission(ChannelPermission.ManageChannels)]
+    [SlashCommand("enable", "Enable the starboard")]
+    public async Task EnableStarboardAsync(ITextChannel channel)
     {
-        [RequireUserPermission(ChannelPermission.ManageChannels)]
-        [SlashCommand("enable", "Enable the starboard")]
-        public async Task EnableStarboardAsync(ITextChannel channel)
+        bool changed = await db.UpsertAsync(x => x.Id == Context.Guild.Id, new Guild(Context.Guild.Id), guild =>
         {
-            bool changed = await db.UpsertAsync(x => x.Id == Context.Guild.Id, new Guild(Context.Guild.Id), guild =>
-            {
-                bool res = guild.StarboardId.HasValue;
+            bool res = guild.StarboardId.HasValue;
 
-                guild.StarboardId = channel.Id;
+            guild.StarboardId = channel.Id;
 
-                return res;
-            });
+            return res;
+        });
 
-            if (changed)
-                await RespondAsync($"Starboard changed! Starred messages will now be posted in {channel.Mention}.");
-            else
-                await RespondAsync($"Starboard enabled! Starred messages will be posted in {channel.Mention}.");
-        }
+        if (changed)
+            await RespondAsync($"Starboard changed! Starred messages will now be posted in {channel.Mention}.");
+        else
+            await RespondAsync($"Starboard enabled! Starred messages will be posted in {channel.Mention}.");
+    }
 
-        [RequireUserPermission(ChannelPermission.ManageChannels)]
-        [SlashCommand("disable", "Disable the starboard")]
-        public async Task DisableStarboardAsync()
+    [RequireUserPermission(ChannelPermission.ManageChannels)]
+    [SlashCommand("disable", "Disable the starboard")]
+    public async Task DisableStarboardAsync()
+    {
+        bool hadValue = await db.UpsertAsync(x => x.Id == Context.Guild.Id, new Guild(Context.Guild.Id), guild =>
         {
-            bool hadValue = await db.UpsertAsync(x => x.Id == Context.Guild.Id, new Guild(Context.Guild.Id), guild =>
-            {
-                bool res = guild.StarboardId.HasValue;
+            bool res = guild.StarboardId.HasValue;
 
-                guild.StarboardId = null;
+            guild.StarboardId = null;
 
-                return res;
-            });
+            return res;
+        });
 
-            if (hadValue)
-                await RespondAsync("Starboard disabled! Starred messages will not be posted anymore.");
-            else
-                await RespondError("Starboard disabled already, nothing to do.");
-        }
+        if (hadValue)
+            await RespondAsync("Starboard disabled! Starred messages will not be posted anymore.");
+        else
+            await RespondError("Starboard disabled already, nothing to do.");
     }
 
     [MessageCommand("Star")]
