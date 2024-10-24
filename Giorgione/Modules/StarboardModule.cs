@@ -112,13 +112,15 @@ public partial class StarboardModule(IHttpClientFactory clientFactory, ILogger<S
         await ModifyOriginalResponseAsync(properties => properties.Content = "Il messaggio è stato stellinato!");
     }
 
-    private string stripImgAttachments(IMessage message, ICollection<string> imgUrls)
+    private string stripImgAttachments(IMessage message, List<string> imgUrls)
     {
+        ArgumentNullException.ThrowIfNull(imgUrls);
+
         return regex
             .Replace(message.Content, match =>
             {
                 // Do not remove the url if it's not an image
-                if (!isImage(match.Value))
+                if (http.IsImage(match.Value))
                     return match.Value;
 
                 imgUrls.Add(match.Value);
@@ -134,7 +136,7 @@ public partial class StarboardModule(IHttpClientFactory clientFactory, ILogger<S
 
         Parallel.ForEach(message.Attachments.Select(a => a.Url), url =>
         {
-            if (isImage(url)) imgUrls.Add(url);
+            if (http.IsImage(url)) imgUrls.Add(url);
 
             else attachments.Add(url);
         });
