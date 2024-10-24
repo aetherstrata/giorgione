@@ -5,39 +5,74 @@ using System.Text.RegularExpressions;
 
 using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 
-using Giorgione.Config;
+using Giorgione.Data;
+using Giorgione.Data.Extensions;
+using Giorgione.Data.Models;
 
 using Microsoft.Extensions.Logging;
 
 namespace Giorgione.Modules;
 
-public partial class StarboardModule(IHttpClientFactory clientFactory, ILogger<StarboardModule> logger, BotConfig config)
+public partial class StarboardModule(
+    AppDbContext db,
+    HttpClient http,
+    ILogger<StarboardModule> logger)
     : BotModule(logger)
 {
     private static readonly Random random = new();
     private static readonly Regex regex = urlRegex();
 
-    private ITextChannel? _starboard;
-
-    /// <inheritdoc />
-    public override async Task BeforeExecuteAsync(ICommandInfo command)
+    [Group("starboard", "Manage the starboard")]
+    public class TextCommands(AppDbContext db, ILogger<StarboardModule> logger) : BotModule(logger)
     {
-        _starboard ??= (ITextChannel) await Context.Client.GetChannelAsync(config.StarboardId).ConfigureAwait(false);
+        [RequireUserPermission(ChannelPermission.ManageChannels)]
+        [SlashCommand("enable", "Enable the starboard")]
+        public async Task EnableStarboardAsync(ITextChannel channel)
+        {
+            bool changed = await db.UpsertAsync(x => x.Id == Context.Guild.Id, new Guild(Context.Guild.Id), guild =>
+            {
+                bool res = guild.StarboardId.HasValue;
+
+                guild.StarboardId = channel.Id;
+
+                return res;
+            });
+
+            if (changed)
+                await RespondAsync($"Starboard changed! Starred messages will now be posted in {channel.Mention}.");
+            else
+                await RespondAsync($"Starboard enabled! Starred messages will be posted in {channel.Mention}.");
+        }
+
+        [RequireUserPermission(ChannelPermission.ManageChannels)]
+        [SlashCommand("disable", "Disable the starboard")]
+        public async Task DisableStarboardAsync()
+        {
+            bool hadValue = await db.UpsertAsync(x => x.Id == Context.Guild.Id, new Guild(Context.Guild.Id), guild =>
+            {
+                bool res = guild.StarboardId.HasValue;
+
+                guild.StarboardId = null;
+
+                return res;
+            });
+
+            if (hadValue)
+                await RespondAsync("Starboard disabled! Starred messages will not be posted anymore.");
+            else
+                await RespondError("Starboard disabled already, nothing to do.");
+        }
     }
 
     [MessageCommand("Star")]
     public async Task CloneToStarboard(IMessage message)
     {
-        if (_starboard is null)
-        {
-            await RespondAsync("Canale non trovato. Sicuro che non l'avete obliterato?", ephemeral: true);
-            return;
-        }
-
         if (message is not IUserMessage userMessage)
         {
-            await RespondAsync("Fanculo il sistema! No stelline a Discord :face_with_symbols_over_mouth:", ephemeral: true);
+            await RespondAsync("Fanculo il sistema! No stelline a Discord :face_with_symbols_over_mouth:",
+                ephemeral: true);
             return;
         }
 
@@ -47,14 +82,15 @@ public partial class StarboardModule(IHttpClientFactory clientFactory, ILogger<S
             return;
         }
 
+        var channel = await getStarboard();
+
+        if (channel == null) return;
+
         await DeferAsync(ephemeral: true);
 
         var embedColor = getRandomColor();
-
         var (imgUrls, attachments) = checkUrls(userMessage);
-
         string cleanMessage = stripImgAttachments(userMessage, imgUrls);
-
         string iconUrl = userMessage.Author.GetDisplayAvatarUrl();
 
         var mainContent = new EmbedBuilder()
@@ -86,7 +122,7 @@ public partial class StarboardModule(IHttpClientFactory clientFactory, ILogger<S
             mainContent.WithImageUrl(imgUrls[0]);
         }
 
-        await _starboard!.SendMessageAsync(embed: mainContent.Build());
+        await channel.SendMessageAsync(embed: mainContent.Build());
 
         //Send the images in different embeds
         if (imgUrls.Count > 1)
@@ -103,7 +139,7 @@ public partial class StarboardModule(IHttpClientFactory clientFactory, ILogger<S
                     .WithTimestamp(userMessage.Timestamp)
                     .Build();
 
-                await _starboard!.SendMessageAsync(embed: embed);
+                await channel.SendMessageAsync(embed: embed);
             });
         }
 
@@ -144,21 +180,32 @@ public partial class StarboardModule(IHttpClientFactory clientFactory, ILogger<S
         return (imgUrls, attachments);
     }
 
-    private bool isImage(string url)
+    private async Task<ITextChannel?> getStarboard()
     {
-        using var client = clientFactory.CreateClient();
-        using var request = new HttpRequestMessage(HttpMethod.Head, url);
-        using var response = client.Send(request);
+        var guild = await db.Guilds.FindAsync(Context.Guild.Id) ?? new Guild(Context.Guild.Id);
 
-        return response.IsSuccessStatusCode &&
-               (response.Content.Headers.ContentType?.MediaType?.StartsWith("image/") ?? false);
+        if (!guild.StarboardId.HasValue)
+        {
+            await RespondError("Starboard is disabled!");
+            return null;
+        }
+
+        var channel = Context.Guild.GetTextChannel(guild.StarboardId.Value);
+
+        if (channel == null)
+        {
+            await RespondError("Starboard was not found!");
+            return null;
+        }
+
+        return channel;
     }
 
     private static Color getRandomColor()
     {
-        const int maxValue = (int) Color.MaxDecimalValue;
+        const int maxValue = (int)Color.MaxDecimalValue;
 
-        return new Color((uint) random.Next(maxValue));
+        return new Color((uint)random.Next(maxValue));
     }
 
     [GeneratedRegex(@"(http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)")]
