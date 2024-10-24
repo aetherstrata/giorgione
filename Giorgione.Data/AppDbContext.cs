@@ -11,8 +11,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<User> Users { get; init; }
 
+    public DbSet<Guild> Guilds { get; init; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // User model
         modelBuilder.Entity<User>().HasKey(u => u.Id);
 
         modelBuilder.Entity<User>().Property(u => u.BirthdayRepresentation)
@@ -21,5 +24,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .IsRequired(false);
 
         modelBuilder.Entity<User>().Ignore(u => u.Birthdate);
+
+        // Guild model
+        modelBuilder.Entity<Guild>().HasKey(g => g.Id);
+
+        modelBuilder.Entity<Guild>().Property(g => g.StarboardId)
+            .HasColumnName("StarboardId")
+            .HasColumnType("bigint");
     }
 }

@@ -10,7 +10,7 @@ namespace Giorgione.Data.Models;
 public sealed class User(ulong id)
 {
     /// The Discord ID of the user
-    public ulong Id { get; init; } = id;
+    public ulong Id { get; } = id;
 
     /// <summary>
     /// The user birthdate
