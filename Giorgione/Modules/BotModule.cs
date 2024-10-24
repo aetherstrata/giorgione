@@ -31,17 +31,11 @@ public class BotModule(ILogger<BotModule> logger) : InteractionModuleBase<Socket
     /// <summary>
     /// Respond to the interaction with a generic error message
     /// </summary>
-    protected Task RespondError(string message, [CallerMemberName] string methodName = "")
+    protected Task RespondError(string title, string message, [CallerMemberName] string methodName = "")
     {
-        Logger.LogError("Error on command {Module}::{Method}: {Message}", GetType(), methodName, message);
+        Logger.LogDebug("Error on command {Module}::{Method}: {Message}", GetType(), methodName, message);
 
-        var embed = new EmbedBuilder()
-            .WithTitle("Error")
-            .WithDescription(message)
-            .WithColor(Color.Red)
-            .Build();
-
-        return RespondAsync(embed: embed);
+        return RespondAsync(embed: Embeds.GenericError(title, message));
     }
 }
 

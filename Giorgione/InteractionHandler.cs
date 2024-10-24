@@ -11,6 +11,7 @@ using Giorgione.Config;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Giorgione;
 
@@ -18,6 +19,7 @@ public class InteractionHandler(
     DiscordSocketClient client,
     InteractionService handler,
     BotConfig config,
+    ILogger<InteractionHandler> logger,
     IServiceProvider services,
     IHostEnvironment environment)
 {
@@ -34,6 +36,9 @@ public class InteractionHandler(
 
         // Process the InteractionCreated payloads to execute Interactions commands
         client.InteractionCreated += OnInteractionCreated;
+
+        // Handle errors in async execution contexts
+        handler.SlashCommandExecuted += OnSlashCommandExecuted;
     }
 
     private async Task OnReady()
@@ -56,6 +61,7 @@ public class InteractionHandler(
             // Execute the incoming command.
             var result = await handler.ExecuteCommandAsync(context, services);
 
+            // Handle RunMode.Sync command results
             if (!result.IsSuccess)
             {
                 switch (result.Error)
@@ -63,6 +69,10 @@ public class InteractionHandler(
                     case InteractionCommandError.UnmetPrecondition:
                         await interaction.RespondAsync("Condizione non soddisfatta");
                         // implement
+                        break;
+
+                    case InteractionCommandError.Exception:
+                        await interaction.RespondAsync("Something went wrong");
                         break;
                 }
             }
@@ -77,6 +87,27 @@ public class InteractionHandler(
                     .GetOriginalResponseAsync()
                     .ContinueWith(msg => msg.Result.DeleteAsync());
             }
+        }
+    }
+
+    private async Task OnSlashCommandExecuted(SlashCommandInfo commandInfo, IInteractionContext context, IResult result)
+    {
+        if (result.IsSuccess) return;
+
+        switch (result.Error)
+        {
+            case InteractionCommandError.UnknownCommand:
+                logger.LogError("Command {ModuleName}::{CommandName} failed: unknown command", commandInfo.Module.Name, commandInfo.Name);
+                await context.Interaction.RespondAsync(embed: Embeds.GenericError("Error", "Unknown command provided"));
+                break;
+            case InteractionCommandError.Exception:
+                await context.Interaction.RespondAsync(embed: Embeds.GenericError("Error", "An unhandled exception occurred"));
+                break;
+            case InteractionCommandError.UnmetPrecondition:
+                logger.LogError("Command {ModuleName}::{CommandName} failed: unmet preconditions", commandInfo.Module.Name, commandInfo.Name);
+                var preconditionResult = (PreconditionResult) result;
+                await context.Interaction.RespondAsync(embed: Embeds.GenericError("Unmet precondition", preconditionResult.ErrorReason));
+                break;
         }
     }
 }

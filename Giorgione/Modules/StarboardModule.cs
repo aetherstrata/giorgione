@@ -60,7 +60,7 @@ public partial class StarboardModule(
         if (hadValue)
             await RespondAsync("Starboard disabled! Starred messages will not be posted anymore.");
         else
-            await RespondError("Starboard disabled already, nothing to do.");
+            await RespondError("Command failed","Starboard disabled already, nothing to do.");
     }
 
     [MessageCommand("Star")]
@@ -183,7 +183,7 @@ public partial class StarboardModule(
 
         if (!guild.StarboardId.HasValue)
         {
-            await RespondError("Starboard is disabled!");
+            await RespondError("Starboard is disabled", "Please execute `/starboard enable <channel>` to start starring messages.");
             return null;
         }
 
@@ -191,7 +191,7 @@ public partial class StarboardModule(
 
         if (channel == null)
         {
-            await RespondError("Starboard was not found!");
+            await RespondError("Starboard was not found", "Please execute `/starboard enable <channel>` to set a new starboard channel.");
             return null;
         }
 
