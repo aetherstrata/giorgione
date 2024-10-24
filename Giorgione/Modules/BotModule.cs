@@ -1,6 +1,9 @@
 // Copyright (c) Davide Pierotti <d.pierotti@live.it>. Licensed under the GPLv3 Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System.Runtime.CompilerServices;
+
+using Discord;
 using Discord.Interactions;
 
 using Microsoft.Extensions.Logging;
@@ -23,6 +26,22 @@ public class BotModule(ILogger<BotModule> logger) : InteractionModuleBase<Socket
         base.AfterExecute(command);
 
         Logger.LogDebug("Executed command {ModuleName}::{CommandName}", command.Module.Name, command.MethodName);
+    }
+
+    /// <summary>
+    /// Respond to the interaction with a generic error message
+    /// </summary>
+    protected Task RespondError(string message, [CallerMemberName] string methodName = "")
+    {
+        Logger.LogError("Error on command {Module}::{Method}: {Message}", GetType(), methodName, message);
+
+        var embed = new EmbedBuilder()
+            .WithTitle("Error")
+            .WithDescription(message)
+            .WithColor(Color.Red)
+            .Build();
+
+        return RespondAsync(embed: embed);
     }
 }
 
