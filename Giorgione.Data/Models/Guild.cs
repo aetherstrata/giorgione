@@ -3,9 +3,12 @@
 
 namespace Giorgione.Data.Models;
 
-public sealed class Guild(ulong id)
+public sealed class Guild(ulong id) : IHasPrimaryKey<Guild, ulong>
 {
     public ulong Id { get; } = id;
 
     public ulong? StarboardId { get; set; }
+
+    /// <inheritdoc />
+    public static Guild Create(ulong id) => new(id);
 }

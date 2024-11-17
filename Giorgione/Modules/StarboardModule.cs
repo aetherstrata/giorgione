@@ -5,12 +5,13 @@ using System.Text.RegularExpressions;
 
 using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 
 using Giorgione.Data;
 using Giorgione.Data.Extensions;
 using Giorgione.Data.Models;
+using Giorgione.Extensions;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Giorgione.Modules;
@@ -29,7 +30,7 @@ public partial class StarboardModule(
     [SlashCommand("enable", "Enable the starboard")]
     public async Task EnableStarboardAsync(ITextChannel channel)
     {
-        bool changed = await db.UpsertAsync(x => x.Id == Context.Guild.Id, new Guild(Context.Guild.Id), guild =>
+        bool changed = await db.Guilds.UpsertAsync(Context.Guild.Id, guild =>
         {
             bool res = guild.StarboardId.HasValue;
 
@@ -48,7 +49,7 @@ public partial class StarboardModule(
     [SlashCommand("disable", "Disable the starboard")]
     public async Task DisableStarboardAsync()
     {
-        bool hadValue = await db.UpsertAsync(x => x.Id == Context.Guild.Id, new Guild(Context.Guild.Id), guild =>
+        bool hadValue = await db.Guilds.UpsertAsync(Context.Guild.Id, guild =>
         {
             bool res = guild.StarboardId.HasValue;
 
@@ -100,12 +101,8 @@ public partial class StarboardModule(
             .WithTitle("Torna al messaggio")
             .WithUrl(userMessage.GetJumpUrl())
             .WithFooter($"ID: {userMessage.Id}")
-            .WithTimestamp(userMessage.Timestamp);
-
-        if (!string.IsNullOrEmpty(cleanMessage))
-        {
-            mainContent.WithDescription(cleanMessage);
-        }
+            .WithTimestamp(userMessage.Timestamp)
+            .WithDescription(cleanMessage);
 
         if (attachments.Count > 0)
         {
@@ -181,7 +178,7 @@ public partial class StarboardModule(
 
     private async Task<ITextChannel?> getStarboard()
     {
-        var guild = await db.Guilds.FindAsync(Context.Guild.Id) ?? new Guild(Context.Guild.Id);
+        var guild = await db.Guilds.FirstOrDefaultAsync(x => x.Id == Context.Guild.Id) ?? new Guild(Context.Guild.Id);
 
         if (!guild.StarboardId.HasValue)
         {
@@ -191,22 +188,19 @@ public partial class StarboardModule(
 
         var channel = Context.Guild.GetTextChannel(guild.StarboardId.Value);
 
-        if (channel == null)
-        {
-            await RespondError("Starboard was not found", "Please execute `/starboard enable <channel>` to set a new starboard channel.");
-            return null;
-        }
+        if (channel != null) return channel;
 
-        return channel;
+        await RespondError("Starboard was not found", "Please execute `/starboard enable <channel>` to set a new starboard channel.");
+        return null;
     }
 
     private static Color getRandomColor()
     {
-        const int maxValue = (int)Color.MaxDecimalValue;
+        const int maxValue = (int) Color.MaxDecimalValue;
 
-        return new Color((uint)random.Next(maxValue));
+        return new Color((uint) random.Next(maxValue));
     }
 
-    [GeneratedRegex(@"(http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)")]
+    [GeneratedRegex(@"(http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)", RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.CultureInvariant)]
     private static partial Regex urlRegex();
 }

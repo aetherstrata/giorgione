@@ -7,10 +7,13 @@ namespace Giorgione.Data.Models;
 /// Bot user model
 /// </summary>
 /// <param name="id">The Discord ID of the user</param>
-public sealed class User(ulong id)
+public sealed class User(ulong id) : IHasPrimaryKey<User, ulong>
 {
     /// The Discord ID of the user
     public ulong Id { get; } = id;
+
+    /// <inheritdoc />
+    public static User Create(ulong id) => new(id);
 
     /// <summary>
     /// The user birthdate
