@@ -1,11 +1,12 @@
 // Copyright (c) Davide Pierotti <d.pierotti@live.it>. Licensed under the GPLv3 Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using Discord;
 using Discord.Audio;
 
-using ConnectionState = Discord.ConnectionState;
+using Giorgione.Audio.Generators;
 
-namespace Giorgione.Noise;
+namespace Giorgione.Extensions;
 
 public static class NoiseExtensions
 {
@@ -15,7 +16,7 @@ public static class NoiseExtensions
 
         var noise = new WhiteNoiseGenerator(4);
 
-        while (client.ConnectionState == ConnectionState.Connected)
+        while (client.ConnectionState == ConnectionState.Connected && !ct.IsCancellationRequested)
         {
             await discordStream.WriteAsync(noise.Generate(amplitude), ct);
         }
@@ -27,7 +28,7 @@ public static class NoiseExtensions
 
         var noise = new BrownNoiseGenerator(4);
 
-        while (client.ConnectionState == ConnectionState.Connected)
+        while (client.ConnectionState == ConnectionState.Connected && !ct.IsCancellationRequested)
         {
             await discordStream.WriteAsync(noise.Generate(amplitude), ct);
         }

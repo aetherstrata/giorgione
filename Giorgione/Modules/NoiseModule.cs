@@ -4,7 +4,7 @@
 using Discord;
 using Discord.Interactions;
 
-using Giorgione.Noise;
+using Giorgione.Extensions;
 
 using Microsoft.Extensions.Logging;
 

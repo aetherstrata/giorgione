@@ -1,16 +1,23 @@
 // Copyright (c) Davide Pierotti <d.pierotti@live.it>. Licensed under the GPLv3 Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-namespace Giorgione.Noise;
+namespace Giorgione.Audio.Generators;
 
-public class WhiteNoiseGenerator(int bufferSeconds) : NoiseGenerator(bufferSeconds)
+public class BrownNoiseGenerator(int bufferSeconds) : NoiseGenerator(bufferSeconds)
 {
+    /// Leaky integrator constant
+    private const double c = 0.99;
+
     /// <inheritdoc />
     public override ReadOnlyMemory<byte> Generate(double amplitude)
     {
+        double sample = 0.0;
+
         for (int i = 0; i < Buffer.Length / Depth; i++)
         {
-            short pcmValue = (short)(Tick() * amplitude * short.MaxValue);
+            sample = c * sample + (1 - c) * Tick();
+
+            short pcmValue = (short)(sample * amplitude * short.MaxValue);
 
             // Convert the sample to little-endian
             Buffer.Span[i * Depth] = (byte)(pcmValue & 0xFF);
