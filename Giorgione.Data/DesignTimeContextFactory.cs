@@ -16,8 +16,10 @@ public class DesignTimeContextFactory : IDesignTimeDbContextFactory<AppDbContext
             .AddJsonFile("appsettings.json")
             .Build();
 
-        var builder = new DbContextOptionsBuilder<AppDbContext>();
-        builder.UseNpgsql(configuration.GetConnectionString("ApplicationContext"));
+        var builder = new DbContextOptionsBuilder<AppDbContext>()
+            .UseNpgsql(configuration.GetConnectionString("ApplicationContext"))
+            .UseSnakeCaseNamingConvention();
+
         return new AppDbContext(builder.Options);
     }
 }

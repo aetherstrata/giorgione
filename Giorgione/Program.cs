@@ -4,6 +4,7 @@ using Discord.Rest;
 using Discord.WebSocket;
 
 using Giorgione;
+using Giorgione.Api.AnimeWorld;
 using Giorgione.Config;
 using Giorgione.Data;
 using Giorgione.Workers;
@@ -25,6 +26,7 @@ builder.Services
     .AddDbContext<AppDbContext>(db =>
     {
         db.UseNpgsql(builder.Configuration.GetConnectionString("ApplicationContext"))
+            .UseSnakeCaseNamingConvention()
             .EnableDetailedErrors();
     })
     .AddSingleton(builder.Configuration.GetSection("BotConfig").Get<BotConfig>()

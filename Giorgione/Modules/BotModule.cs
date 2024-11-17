@@ -3,7 +3,6 @@
 
 using System.Runtime.CompilerServices;
 
-using Discord;
 using Discord.Interactions;
 
 using Microsoft.Extensions.Logging;

@@ -9,6 +9,8 @@ public sealed class Guild(ulong id) : IHasPrimaryKey<Guild, ulong>
 
     public ulong? StarboardId { get; set; }
 
+    public ulong? AnimeFeedChannelId { get; set; }
+
     /// <inheritdoc />
     public static Guild Create(ulong id) => new(id);
 }
