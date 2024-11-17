@@ -124,13 +124,15 @@ public partial class StarboardModule(
         //Send the images in different embeds
         if (imgUrls.Count > 1)
         {
-            await Parallel.ForEachAsync(imgUrls.Skip(1), async (url, ct) =>
+            await Parallel.ForEachAsync(imgUrls.Skip(1), async (url, _) =>
             {
                 var embed = new EmbedBuilder()
                     .WithColor(embedColor)
-                    .WithAuthor(
-                        name: $"{userMessage.Author.Username}  •  {userMessage.Author.Id}",
-                        iconUrl: iconUrl)
+                    .WithAuthor(author =>
+                    {
+                        author.WithName($"{userMessage.Author.Username}  •  {userMessage.Author.Id}");
+                        author.WithIconUrl(iconUrl);
+                    })
                     .WithImageUrl(url)
                     .WithFooter($"ID: {userMessage.Id}")
                     .WithTimestamp(userMessage.Timestamp)
