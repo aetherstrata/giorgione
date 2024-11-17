@@ -19,7 +19,18 @@ public class ModerationModule(ILogger<ModerationModule> logger) : BotModule(logg
         [Summary("delete_messages", "How many days of their recent history to delete (Max 7 days)")]
         int pruneDays = 0)
     {
-        await this.TryRequestAsync(m => m.Context.Guild.AddBanAsync(user, pruneDays, reason));
+        try
+        {
+            await Context.Guild.AddBanAsync(user, pruneDays, reason);
+        }
+        catch (ArgumentException ex)
+        {
+            await RespondError("Unmet preconditions", ex.Message);
+        }
+        catch (Exception ex)
+        {
+            await RespondError("Error", ex.Message);
+        }
 
         var embed = new EmbedBuilder()
             .WithTitle("Member Banned")
@@ -45,8 +56,19 @@ public class ModerationModule(ILogger<ModerationModule> logger) : BotModule(logg
         [Summary("delete_messages", "How many days of their recent history to delete (Max 7 days)")]
         int pruneDays = 0)
     {
-        await this.TryRequestAsync(m => m.Context.Guild.AddBanAsync(user, pruneDays, reason));
-        await this.TryRequestAsync(m => m.Context.Guild.RemoveBanAsync(user));
+        try
+        {
+            await Context.Guild.AddBanAsync(user, pruneDays, reason);
+            await Context.Guild.RemoveBanAsync(user);
+        }
+        catch (ArgumentException ex)
+        {
+            await RespondError("Unmet preconditions", ex.Message);
+        }
+        catch (Exception ex)
+        {
+            await RespondError("Error", ex.Message);
+        }
 
         var embed = new EmbedBuilder()
             .WithTitle("Member Softbanned")
@@ -68,7 +90,18 @@ public class ModerationModule(ILogger<ModerationModule> logger) : BotModule(logg
     [SlashCommand("unban", "Unban a user")]
     public async Task UnbanAsync(IUser user)
     {
-        await this.TryRequestAsync(m => m.Context.Guild.RemoveBanAsync(user));
+        try
+        {
+            await Context.Guild.RemoveBanAsync(user);
+        }
+        catch (ArgumentException ex)
+        {
+            await RespondError("Unmet preconditions", ex.Message);
+        }
+        catch (Exception ex)
+        {
+            await RespondError("Error", ex.Message);
+        }
 
         var embed = new EmbedBuilder()
             .WithTitle("Member Unbanned")
@@ -84,42 +117,33 @@ public class ModerationModule(ILogger<ModerationModule> logger) : BotModule(logg
     [RequireUserPermission(GuildPermission.KickMembers)]
     [RequireBotPermission(GuildPermission.KickMembers)]
     [SlashCommand("kick", "Kick a user")]
-    public async Task KickAsync(IUser user,
+    public async Task KickAsync(IGuildUser user,
         [Summary("reason", "The reason for this kick")]
         string? reason = null)
     {
-        var guildUser = await this.TryRequestAsync(async m =>
+        try
         {
-            if (!m.Context.Guild.HasAllMembers)
-            {
-                await m.Context.Guild.DownloadUsersAsync();
-            }
-
-            return m.Context.Guild.GetUser(user.Id);
-        });
-
-        if (guildUser is not null)
-        {
-            var embed = new EmbedBuilder()
-                .WithTitle("Member Kicked")
-                .WithDescription($"<@{guildUser.Id}> was kicked by <@{Context.User.Id}>")
-                .WithColor(Color.Orange);
-
-            if (reason is not null)
-            {
-                embed.AddField("Reason", reason);
-            }
-
-            await RespondAsync(embed: embed.Build());
+            await user.KickAsync(reason);
         }
-        else
+        catch (ArgumentException ex)
         {
-            var embed = new EmbedBuilder()
-                .WithTitle("Kick Failed")
-                .WithDescription($"<@{user.Id}> is not present in this server")
-                .WithColor(Color.Red);
-
-            await RespondAsync(embed: embed.Build());
+            await RespondError("Unmet preconditions", ex.Message);
         }
+        catch (Exception ex)
+        {
+            await RespondError("Error", ex.Message);
+        }
+
+        var embed = new EmbedBuilder()
+            .WithTitle("Member Kicked")
+            .WithDescription($"<@{user.Id}> was kicked by <@{Context.User.Id}>")
+            .WithColor(Color.Orange);
+
+        if (reason is not null)
+        {
+            embed.AddField("Reason", reason);
+        }
+
+        await RespondAsync(embed: embed.Build());
     }
 }
