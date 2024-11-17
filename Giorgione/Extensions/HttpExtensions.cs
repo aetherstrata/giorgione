@@ -1,7 +1,7 @@
 // Copyright (c) Davide Pierotti <d.pierotti@live.it>. Licensed under the GPLv3 Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-namespace Giorgione;
+namespace Giorgione.Extensions;
 
 public static class HttpExtensions
 {
@@ -10,7 +10,6 @@ public static class HttpExtensions
         using var request = new HttpRequestMessage(HttpMethod.Head, url);
         using var response = http.Send(request);
 
-        return response.IsSuccessStatusCode &&
-               (response.Content.Headers.ContentType?.MediaType?.StartsWith("image/") ?? false);
+        return response.IsSuccessStatusCode && (response.Content.Headers.ContentType?.MediaType?.StartsWith("image/") ?? false);
     }
 }
