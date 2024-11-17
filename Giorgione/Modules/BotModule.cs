@@ -12,8 +12,9 @@ namespace Giorgione.Modules;
 
 public class BotModule(ILogger<BotModule> logger) : InteractionModuleBase<SocketInteractionContext>
 {
-    public ILogger<BotModule> Logger { get; } = logger;
+    protected ILogger<BotModule> Logger { get; } = logger;
 
+    /// <inheritdoc />
     public override void BeforeExecute(ICommandInfo command)
     {
         base.BeforeExecute(command);
@@ -21,6 +22,7 @@ public class BotModule(ILogger<BotModule> logger) : InteractionModuleBase<Socket
         Logger.LogDebug("Executing command {ModuleName}::{CommandName}", command.Module.Name, command.MethodName);
     }
 
+    /// <inheritdoc />
     public override void AfterExecute(ICommandInfo command)
     {
         base.AfterExecute(command);
