@@ -26,6 +26,10 @@ internal static class Scheduling
                 store.UseNewtonsoftJsonSerializer();
             });
 
+            config.AddJob<AnimeFeedChecker>(job => job
+                .WithIdentity(nameof(AnimeFeedChecker))
+                .WithDescription("Check AnimeWorld feed for new published works"));
+
             config.AddJob<BirthdateChecker>(job => job
                 .WithIdentity(nameof(BirthdateChecker))
                 .WithDescription("Check for birthdays occurring on this day of the year"));
@@ -35,6 +39,12 @@ internal static class Scheduling
                 .WithDescription("Trigger a background task everyday at midnight")
                 .ForJob(nameof(BirthdateChecker))
                 .WithCronSchedule(CronScheduleBuilder.DailyAtHourAndMinute(0,0)));
+
+            config.AddTrigger(trigger => trigger
+                .WithIdentity("every-5min")
+                .WithDescription("Trigger a background task every 5 minutes")
+                .ForJob(nameof(AnimeFeedChecker))
+                .WithSchedule(SimpleScheduleBuilder.RepeatMinutelyForever(5)));
         });
 
         services.AddQuartzHostedService(config =>

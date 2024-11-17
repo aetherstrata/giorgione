@@ -51,6 +51,7 @@ builder.Services
     .AddSingleton<IRestClientProvider>(x => x.GetRequiredService<DiscordSocketClient>()) //TODO: wait for upstream fix
     .AddSingleton<InteractionService>()
     .AddSingleton<InteractionHandler>()
+    .AddScoped<AnimeWorldClient>()
     .AddHostedService<EvalWatchdog>()
     .AddHostedService<GiorgioneBot>();
 
