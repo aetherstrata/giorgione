@@ -17,6 +17,41 @@ namespace Giorgione.Modules;
 [Group("birthday", "Set your birthday and check upcoming ones")]
 public class BirthdateModule(AppDbContext db, ILogger<BirthdateModule> logger) : BotModule(logger)
 {
+    [Group("alert", "Manage the channel where birthday alerts are sent")]
+    public class Alert(AppDbContext db, ILogger<BirthdateModule> logger) : BotModule(logger)
+    {
+        [RequireUserPermission(ChannelPermission.ManageChannels)]
+        [RequireBotPermission(ChannelPermission.SendMessages)]
+        [SlashCommand("enable", "Enable birthday alerts in the selected channel")]
+        public async Task EnableChannelAsync(ITextChannel channel)
+        {
+            try
+            {
+                await db.Guilds.UpsertAsync(Context.Guild.Id, g => g.BirthdayChannelId = channel.Id);
+                await RespondAsync("The birthday channel has been enabled.");
+            }
+            catch (Exception ex)
+            {
+                await RespondError(ex, "Error","Could not upsert birthday channel. See logs for more information.");
+            }
+        }
+
+        [RequireUserPermission(ChannelPermission.ManageChannels)]
+        [SlashCommand("disable", "Disable birthday alerts")]
+        public async Task DisableChannelAsync()
+        {
+            try
+            {
+                await db.Guilds.UpsertAsync(Context.Guild.Id, g => g.BirthdayChannelId = null);
+                await RespondAsync("The birthday channel has been disabled.");
+            }
+            catch (Exception ex)
+            {
+                await RespondError(ex, "Error","Could not upsert birthday channel. See logs for more information.");
+            }
+        }
+    }
+
     [SlashCommand("show", "Show your birthdate")]
     public async Task GetBirthdayAsync(IUser? user = null)
     {
