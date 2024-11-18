@@ -13,6 +13,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<Guild> Guilds { get; init; }
 
+    public DbSet<Member> Members { get; init; }
+
     public DbSet<SeenEpisode> SeenEpisodes { get; init; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -38,5 +40,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         // Anime feed model
         modelBuilder.Entity<SeenEpisode>().HasKey(u => u.Id);
+
+        // Guild user settings model
+        modelBuilder.Entity<Member>().HasKey(gu => new { gu.UserId, gu.GuildId });
+
+        modelBuilder.Entity<Member>().HasOne(u => u.Guild)
+            .WithMany(g => g.Members)
+            .HasForeignKey(gu => gu.GuildId);
+
+        modelBuilder.Entity<Member>().HasOne(u => u.User)
+            .WithMany(u => u.GuildSettings)
+            .HasForeignKey(gu => gu.UserId);
     }
 }

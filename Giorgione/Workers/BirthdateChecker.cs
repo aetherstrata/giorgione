@@ -24,26 +24,16 @@ internal class BirthdateChecker(
 {
     public async Task Execute(IJobExecutionContext context)
     {
-        var results = await getCelebratingUsers();
+        var guilds = await db.Members.WithBirthdate()
+            .GroupBy(m => m.Guild)
+            .ToDictionaryAsync(x => x.Key, x => x.ToList());
 
-        if (results.Count == 0) return;
-
-        string message = string.Join('\n', results.Select(mapGreetingMessage));
-        var channel = (ITextChannel) client.GetGuild(config.GuildId).GetChannel(712271135021989938);
-        await channel.SendMessageAsync(message);
-    }
-
-    private async Task<List<User>> getCelebratingUsers()
-    {
-        logger.LogDebug("Checking for birthdays...");
-
-        var results = await db.Users
-            .Where(UserFilter.ByBirthdate(DateTime.Now))
-            .ToListAsync();
-
-        logger.LogDebug("Found {Count} users", results.Count);
-
-        return results;
+        await Parallel.ForEachAsync(guilds, async (pair, token) =>
+        {
+            string message = string.Join('\n', pair.Value.Select(m => mapGreetingMessage(m.User)));
+            var channel = (ITextChannel) await client.GetChannelAsync(pair.Key.BirthdayChannelId!.Value);
+            await channel.SendMessageAsync(message);
+        });
     }
 
     private static string mapGreetingMessage(User user) => user.Birthdate switch

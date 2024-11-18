@@ -38,6 +38,16 @@ public class BotModule(ILogger<BotModule> logger) : InteractionModuleBase<Socket
 
         return RespondAsync(embed: Embeds.GenericError(title, message));
     }
+
+    /// <summary>
+    /// Respond to the interaction with a generic error message
+    /// </summary>
+    protected Task RespondError(Exception ex, string title, string message, [CallerMemberName] string methodName = "")
+    {
+        Logger.LogDebug(ex, "Error on command {Module}::{Method}: {Message}", GetType(), methodName, message);
+
+        return RespondAsync(embed: Embeds.GenericError(title, message));
+    }
 }
 
 

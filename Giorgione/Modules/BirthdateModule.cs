@@ -5,6 +5,7 @@ using Discord.Interactions;
 using Discord;
 
 using Giorgione.Data;
+using Giorgione.Data.Extensions;
 using Giorgione.Data.Filters;
 using Giorgione.Data.Models;
 
@@ -24,6 +25,7 @@ public class BirthdateModule(AppDbContext db, ILogger<BirthdateModule> logger) :
         try
         {
             var userEntity = await db.Users.FindAsync(id);
+
             string message = userEntity is null
                 ? "User was not found in the database"
                 : userEntity.Birthdate.ToShortString();
@@ -44,23 +46,9 @@ public class BirthdateModule(AppDbContext db, ILogger<BirthdateModule> logger) :
 
         try
         {
-            var user = await db.Users.FindAsync(Context.User.Id);
+            await db.Users.UpsertAsync(Context.User.Id, u => u.Birthdate = birthdate);
 
-            if (user is not null)
-            {
-                user.Birthdate = birthdate;
-                db.Users.Update(user);
-            }
-            else
-            {
-                user = new User(Context.User.Id)
-                {
-                    Birthdate = birthdate
-                };
-                db.Users.Add(user);
-            }
-
-            await db.SaveChangesAsync();
+            await db.Members.UpsertAsync((Context.Guild.Id, Context.User.Id), u => u.DisplayBirthday = true);
 
             var embed = new EmbedBuilder()
                 .WithColor(Color.Teal)
@@ -90,8 +78,58 @@ public class BirthdateModule(AppDbContext db, ILogger<BirthdateModule> logger) :
         }
         catch (Exception e)
         {
-            Logger.LogError(e, "An error occurred while processing a '/birthday set' command");
-            await RespondAsync("An error occurred", ephemeral: true);
+            await RespondError(e, "Error", "An error occurred. See log for further details.");
+        }
+    }
+
+    [SlashCommand("display", "Display your birthday on this server")]
+    public async Task BirthdayDisplayAsync()
+    {
+        try
+        {
+            await db.Members.UpsertAsync((Context.Guild.Id, Context.User.Id), u => u.DisplayBirthday = true);
+        }
+        catch (Exception e)
+        {
+            await RespondError(e, "Error", "An error occurred. See log for further details.");
+        }
+    }
+
+    [SlashCommand("hide", "Hide your birthday from this server")]
+    public async Task BirthdayHideAsync()
+    {
+        try
+        {
+            await db.Members.UpsertAsync((Context.Guild.Id, Context.User.Id), u => u.DisplayBirthday = false);
+        }
+        catch (Exception e)
+        {
+            await RespondError(e, "Error", "An error occurred. See log for further details.");
+        }
+    }
+
+    [SlashCommand("remove", "Remove your birthday")]
+    public async Task BirthdayRemoveAsync()
+    {
+        try
+        {
+            await db.Users.UpsertAsync(Context.User.Id, u => u.Birthdate = new NotSet());
+
+            await db.Members
+                .Where(gu => gu.UserId == Context.User.Id)
+                .ExecuteUpdateAsync(calls => calls.SetProperty(x => x.DisplayBirthday, false));
+
+            var embed = new EmbedBuilder()
+                .WithColor(Color.Green)
+                .WithTitle("Success")
+                .WithDescription("Your birthday has been removed.")
+                .Build();
+
+            await RespondAsync(embed: embed);
+        }
+        catch (Exception e)
+        {
+            await RespondError(e, "Error", "An error occurred. See log for further details.");
         }
     }
 
@@ -100,23 +138,24 @@ public class BirthdateModule(AppDbContext db, ILogger<BirthdateModule> logger) :
     {
         try
         {
-            var list = await db.Users
-                .Where(UserFilter.HasBirthdate)
+            var list = await db.Members
+                .Where(gu => gu.GuildId == Context.Guild.Id)
+                .Select(gu => gu.User)
+                .HasBirthdate()
                 .Select(static user => $"<@{user.Id}> - {user.Birthdate.ToShortString()}")
                 .ToListAsync();
 
             var listEmbed = new EmbedBuilder()
                 .WithColor(Color.Blue)
-                .WithTitle("Lista dei festeggiati")
-                .WithDescription(string.Join('\n', list))
+                .WithTitle("Birthdays list")
+                .WithDescription(list.Count > 0 ? string.Join('\n', list) : "No birthday defined.")
                 .Build();
 
             await RespondAsync(embed: listEmbed);
         }
         catch (Exception e)
         {
-            Logger.LogError(e, "An error occurred while processing a '/birthday list' command");
-            await RespondAsync("An error occurred", ephemeral: true);
+            await RespondError(e, "Error", "An error occurred. See log for further details.");
         }
     }
 }

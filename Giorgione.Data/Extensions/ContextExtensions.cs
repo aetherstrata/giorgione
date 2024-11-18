@@ -31,7 +31,7 @@ public static class ContextExtensions
         where T : class, IHasPrimaryKey<T,TKey>
         where TKey : struct, IEquatable<TKey>
     {
-        var entity = await db.FirstOrDefaultAsync(x => x.Id.Equals(fallback), ct);
+        var entity = await db.FirstOrDefaultAsync(T.BuildFindExpression(fallback), ct);
 
         EntityEntry<T> entry;
 
@@ -59,7 +59,7 @@ public static class ContextExtensions
         where T : class, IHasPrimaryKey<T,TKey>
         where TKey : struct, IEquatable<TKey>
     {
-        T? entity = await db.FirstOrDefaultAsync(x => x.Id.Equals(fallback), ct);
+        T? entity = await db.FirstOrDefaultAsync(T.BuildFindExpression(fallback), ct);
 
         EntityEntry<T> entry;
 
@@ -102,7 +102,7 @@ public static class ContextExtensions
         where T : class, IHasPrimaryKey<T, TKey>
         where TKey : struct, IEquatable<TKey>
     {
-        var entity = await db.FirstOrDefaultAsync(x => x.Id.Equals(fallback), ct);
+        var entity = await db.FirstOrDefaultAsync(T.BuildFindExpression(fallback), ct);
 
         TResult result;
         EntityEntry<T> entry;
@@ -133,7 +133,7 @@ public static class ContextExtensions
         where T : class, IHasPrimaryKey<T,TKey>
         where TKey : struct, IEquatable<TKey>
     {
-        var entity = await db.FirstOrDefaultAsync(x => x.Id.Equals(fallback), ct);
+        var entity = await db.FirstOrDefaultAsync(T.BuildFindExpression(fallback), ct);
 
         TResult result;
         EntityEntry<T> entry;
