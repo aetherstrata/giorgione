@@ -34,6 +34,8 @@ public class AnimeFeedChecker(AnimeWorldClient aw, AppDbContext db, DiscordSocke
 
             var newEpisodes = fetchedEpisodes.Where(ep => !seenIds.Contains(ep.Guid)).ToArray();
 
+            if (newEpisodes.Length == 0) return;
+
             await db.SeenEpisodes.AddRangeAsync(newEpisodes.Select(ep => new SeenEpisode(ep.Guid)));
 
             await db.SaveChangesAsync();
