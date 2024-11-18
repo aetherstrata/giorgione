@@ -17,10 +17,10 @@ using Quartz;
 namespace Giorgione.Workers;
 
 internal class BirthdateChecker(
-    DiscordSocketClient client,
+    AppDbContext db,
     BotConfig config,
-    ILogger<BirthdateChecker> logger,
-    IDbContextFactory<AppDbContext> dbFactory) : IJob
+    DiscordSocketClient client,
+    ILogger<BirthdateChecker> logger) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
@@ -36,8 +36,6 @@ internal class BirthdateChecker(
     private async Task<List<User>> getCelebratingUsers()
     {
         logger.LogDebug("Checking for birthdays...");
-
-        await using var db = await dbFactory.CreateDbContextAsync();
 
         var results = await db.Users
             .Where(UserFilter.ByBirthdate(DateTime.Now))

@@ -7,6 +7,8 @@ public sealed class Guild(ulong id) : IHasPrimaryKey<Guild, ulong>
 {
     public ulong Id { get; } = id;
 
+    public ulong? BirthdayChannelId { get; set; }
+
     public ulong? StarboardId { get; set; }
 
     public ulong? AnimeFeedChannelId { get; set; }

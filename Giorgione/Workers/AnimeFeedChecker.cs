@@ -39,7 +39,7 @@ public class AnimeFeedChecker(AnimeWorldClient aw, AppDbContext db, DiscordSocke
             await db.SaveChangesAsync();
 
             var channelIds = await db.Guilds
-                .Where(g => g.AnimeFeedChannelId != null)
+                .Where(g => g.AnimeFeedChannelId.HasValue)
                 .Select(g => g.AnimeFeedChannelId!.Value)
                 .ToListAsync();
 

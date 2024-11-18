@@ -41,6 +41,7 @@ public abstract record Birthdate
 /// <param name="Birthday">The user birthday</param>
 public sealed record FullDate(DateOnly Birthday) : Birthdate
 {
+    /// <inheritdoc />
     public override string ToShortString() => Birthday.ToString("dd/MM/yyyy");
 
     /// <summary>
@@ -95,15 +96,6 @@ public static class BirthdateExtensions
         NotSet => null,
         FullDate fullDate => fullDate.Birthday,
         MonthDay monthDay => new DateOnly(1, monthDay.Month, monthDay.Day),
-        _ => throw new ArgumentException($"Unknown birthdate kind: {birthdate}")
-    };
-
-    public static TResult Map<TResult>(this Birthdate birthdate,
-        Func<FullDate, TResult> mapFull, Func<MonthDay, TResult> mapMonthDay, Func<TResult> mapNotSet) => birthdate switch
-    {
-        NotSet => mapNotSet(),
-        FullDate fullDate => mapFull(fullDate),
-        MonthDay monthDay => mapMonthDay(monthDay),
         _ => throw new ArgumentException($"Unknown birthdate kind: {birthdate}")
     };
 }
