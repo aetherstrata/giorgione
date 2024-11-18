@@ -18,7 +18,6 @@ namespace Giorgione.Workers;
 
 internal class BirthdateChecker(
     AppDbContext db,
-    BotConfig config,
     DiscordSocketClient client,
     ILogger<BirthdateChecker> logger) : IJob
 {

@@ -6,6 +6,5 @@ namespace Giorgione.Config;
 public sealed class BotConfig
 {
     public required string Token { get; init; }
-    public required ulong GuildId { get; init; }
     public required ulong SuperuserId { get; init; }
 }
