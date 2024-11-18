@@ -32,6 +32,11 @@ namespace Giorgione.Database.Migrations
                 newName: "id");
 
             migrationBuilder.RenameColumn(
+                name: "Birthday",
+                table: "users",
+                newName: "birthday");
+
+            migrationBuilder.RenameColumn(
                 name: "Id",
                 table: "guilds",
                 newName: "id");
