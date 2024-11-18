@@ -140,9 +140,8 @@ public class BirthdateModule(AppDbContext db, ILogger<BirthdateModule> logger) :
         {
             var list = await db.Members
                 .Where(gu => gu.GuildId == Context.Guild.Id)
-                .Select(gu => gu.User)
                 .HasBirthdate()
-                .Select(static user => $"<@{user.Id}> - {user.Birthdate.ToShortString()}")
+                .Select(static m => $"<@{m.User.Id}> - {m.User.Birthdate.ToShortString()}")
                 .ToListAsync();
 
             var listEmbed = new EmbedBuilder()

@@ -4,7 +4,6 @@
 using Discord;
 using Discord.WebSocket;
 
-using Giorgione.Config;
 using Giorgione.Data;
 using Giorgione.Data.Filters;
 using Giorgione.Data.Models;
@@ -23,9 +22,11 @@ internal class BirthdateChecker(
 {
     public async Task Execute(IJobExecutionContext context)
     {
-        var guilds = await db.Members.WithBirthdate()
+        var guilds = await db.Members.WithBirthdate(DateTime.Now)
             .GroupBy(m => m.Guild)
             .ToDictionaryAsync(x => x.Key, x => x.ToList());
+
+        logger.LogDebug("Sending birthday greeting messages in {GuildCount} guilds.", guilds.Count);
 
         await Parallel.ForEachAsync(guilds, async (pair, token) =>
         {
