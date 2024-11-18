@@ -123,6 +123,7 @@ public class BirthdateModule(AppDbContext db, ILogger<BirthdateModule> logger) :
         try
         {
             await db.Members.UpsertAsync((Context.Guild.Id, Context.User.Id), u => u.DisplayBirthday = true);
+            await RespondAsync("Your birthdate will now be displayed on this server.");
         }
         catch (Exception e)
         {
@@ -136,6 +137,7 @@ public class BirthdateModule(AppDbContext db, ILogger<BirthdateModule> logger) :
         try
         {
             await db.Members.UpsertAsync((Context.Guild.Id, Context.User.Id), u => u.DisplayBirthday = false);
+            await RespondAsync("Your birthdate will not be displayed on this server anymore.");
         }
         catch (Exception e)
         {
@@ -181,8 +183,8 @@ public class BirthdateModule(AppDbContext db, ILogger<BirthdateModule> logger) :
 
             var listEmbed = new EmbedBuilder()
                 .WithColor(Color.Blue)
-                .WithTitle("Birthdays list")
-                .WithDescription(list.Count > 0 ? string.Join('\n', list) : "No birthday defined.")
+                .WithTitle("Birthdate list")
+                .WithDescription(list.Count > 0 ? string.Join('\n', list) : "No birthdates defined.")
                 .Build();
 
             await RespondAsync(embed: listEmbed);
