@@ -21,26 +21,27 @@ public class AnimeFeedChecker(AnimeWorldClient aw, AppDbContext db, DiscordSocke
     {
         try
         {
-            var fetchedEpisodes = aw.GetFeed().ToArray();
+            var fetchedEpisodes = await aw.GetEpisodes().ToArrayAsync().ConfigureAwait(false);
 
-            //TODO: Change to ToHashSetAsync when Npgsql is updated to EF Core 9
-            var seenIds = db.SeenEpisodes
-                .Where(ep => fetchedEpisodes
-                    .Select(x => x.Guid)
-                    .ToHashSet()
-                    .Contains(ep.Id))
-                .Select(ep => ep.Id)
+            var fetchedIds = fetchedEpisodes
+                .Select(x => x.Guid)
                 .ToHashSet();
+
+            var seenIds = await db.SeenEpisodes
+                .AsNoTracking()
+                .Where(ep => fetchedIds.Contains(ep.Id))
+                .Select(ep => ep.Id)
+                .ToHashSetAsync();
 
             var newEpisodes = fetchedEpisodes.Where(ep => !seenIds.Contains(ep.Guid)).ToArray();
 
             if (newEpisodes.Length == 0) return;
 
             await db.SeenEpisodes.AddRangeAsync(newEpisodes.Select(ep => new SeenEpisode(ep.Guid)));
-
             await db.SaveChangesAsync();
 
             var channelIds = await db.Guilds
+                .AsNoTracking()
                 .Where(g => g.AnimeFeedChannelId.HasValue)
                 .Select(g => g.AnimeFeedChannelId!.Value)
                 .ToListAsync();
