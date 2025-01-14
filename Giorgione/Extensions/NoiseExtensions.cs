@@ -4,7 +4,7 @@
 using Discord;
 using Discord.Audio;
 
-using Giorgione.Audio.Generators;
+using Giorgione.Audio.Noise;
 
 namespace Giorgione.Extensions;
 
