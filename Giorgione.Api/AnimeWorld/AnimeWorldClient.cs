@@ -5,26 +5,36 @@ using System.ServiceModel.Syndication;
 using System.Xml;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Giorgione.Api.AnimeWorld;
 
 public class AnimeWorldClient
 {
     private const string rss_url = "http://www.animeworld.so/rss/episodes";
+    private const string cookie_file = "./aw_security_cookie";
 
+    private static readonly SyndicationFeed empty_feed = new();
+
+    private readonly HttpClient _http;
     private readonly ILogger<AnimeWorldClient> _logger;
 
-    public AnimeWorldClient(ILogger<AnimeWorldClient> logger)
+    public AnimeWorldClient(ILogger<AnimeWorldClient> logger, HttpClient httpClient)
     {
         _logger = logger;
+        _http = httpClient;
+
+        if (!File.Exists(cookie_file))
+        {
+            File.Create(cookie_file).Close();
+        }
     }
 
-    public IEnumerable<AnimeWorldEpisode> GetFeed()
+    public async IAsyncEnumerable<AnimeWorldEpisode> GetEpisodes()
     {
         _logger.LogDebug("Reading AnimeWorld feed");
 
-        using var reader = XmlReader.Create(rss_url);
-        var feed = SyndicationFeed.Load(reader);
+        var feed = await getRssFeed();
 
         _logger.LogDebug("Got feed successfully. Last updated: {PubDate}", feed.LastUpdatedTime);
 
@@ -32,6 +42,44 @@ public class AnimeWorldClient
         {
             yield return parseEpisode(item);
         }
+    }
+
+    private async Task<SyndicationFeed> getRssFeed()
+    {
+        for (int retry = 0; retry < 5; retry++) try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, rss_url);
+
+            // Add the security cookie to request header
+            string securityCookie = await File.ReadAllTextAsync(cookie_file);
+            if (!string.IsNullOrEmpty(securityCookie))
+            {
+                request.Headers.Add(HeaderNames.Cookie, securityCookie);
+            }
+
+            using var response = await _http.SendAsync(request);
+
+            // Get the cookie for the next request
+            if (response.Headers.TryGetValues("Set-Cookie", out var cookies))
+            {
+                string? newCookie = cookies.FirstOrDefault(x => x.StartsWith("SecurityAW", StringComparison.Ordinal));
+                if (!string.IsNullOrEmpty(newCookie))
+                {
+                    await File.WriteAllTextAsync(cookie_file, newCookie[..newCookie.IndexOf(';')]);
+                }
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            await using var stream = await response.Content.ReadAsStreamAsync();
+            return SyndicationFeed.Load(XmlReader.Create(stream));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while retrieving AnimeWorld feed. Try #{RetryNumber}", retry);
+        }
+
+        return empty_feed;
     }
 
     private static AnimeWorldEpisode parseEpisode(SyndicationItem item)
@@ -99,7 +147,9 @@ public class AnimeWorldClient
         }
         while (reader.Read());
 
-        ep.EpisodeNumber = isDouble ? new DoubleEpNumber(double.Parse(episode)) : new IntEpNumber(int.Parse(episode));
+        ep.EpisodeNumber = isDouble
+            ? new DoubleEpNumber(double.Parse(episode))
+            : new IntEpNumber(int.Parse(episode));
 
         return ep;
     }
