@@ -10,7 +10,7 @@ namespace Giorgione.Data;
 /// </summary>
 /// <typeparam name="T">The type that implements the interface.</typeparam>
 /// <typeparam name="TKey">The type of the primary key. It must be a value type and implement <see cref="IEquatable{TKey}"/>.</typeparam>
-public interface IHasPrimaryKey<T,TKey> where TKey : struct, IEquatable<TKey>
+public interface IHasPrimaryKey<T, in TKey> where TKey : struct, IEquatable<TKey>
 {
     /// <summary>
     /// Build the expression to find the entity in the database

@@ -50,7 +50,7 @@ public class AnimeFeedChecker(AnimeWorldClient aw, AppDbContext db, DiscordSocke
             {
                 var channel = await discord.GetChannelAsync(channelId).ConfigureAwait(false) as ITextChannel;
 
-                var embeds = newEpisodes.Select(ep => new EmbedBuilder()
+                var embedChunks = newEpisodes.Select(ep => new EmbedBuilder()
                         .WithColor(Color.Blue)
                         .WithTitle(ep.Title)
                         .WithUrl(ep.EpisodeUrl.AbsoluteUri)
@@ -58,9 +58,13 @@ public class AnimeFeedChecker(AnimeWorldClient aw, AppDbContext db, DiscordSocke
                         .WithThumbnailUrl(ep.ImageUrl?.AbsoluteUri)
                         .WithTimestamp(ep.PublicationDate)
                         .Build())
+                    .Chunk(10)
                     .ToArray();
 
-                await channel!.SendMessageAsync(embeds: embeds).ConfigureAwait(false);
+                foreach (var chunk in embedChunks)
+                {
+                    await channel!.SendMessageAsync(embeds: chunk).ConfigureAwait(false);
+                }
             });
         }
         catch (Exception e)

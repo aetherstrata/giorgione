@@ -23,8 +23,7 @@ public static class ContextExtensions
     /// If the entity is not found, a new entity will be added to the context.
     /// If the entity is found, it will be updated in the context.
     /// </remarks>
-    public static async Task UpsertAsync<T,TKey>(
-        this DbSet<T> db,
+    public static async Task UpsertAsync<T,TKey>(this DbSet<T> db,
         TKey fallback,
         Action<T> updateAction,
         CancellationToken ct = default)
@@ -51,8 +50,7 @@ public static class ContextExtensions
     }
 
     /// <inheritdoc cref="UpsertAsync{T,TKey}(Microsoft.EntityFrameworkCore.DbSet{T},TKey,System.Action{T},System.Threading.CancellationToken)"/>
-    public static async Task UpsertAsync<T,TKey>(
-        this DbSet<T> db,
+    public static async Task UpsertAsync<T,TKey>(this DbSet<T> db,
         TKey fallback,
         Func<T, Task> updateAction,
         CancellationToken ct = default)
@@ -94,8 +92,7 @@ public static class ContextExtensions
     /// If the entity is not found, a new entity will be added to the context.
     /// If the entity is found, it will be updated in the context.
     /// </remarks>
-    public static async Task<TResult> UpsertAsync<T,TKey,TResult>(
-        this DbSet<T> db,
+    public static async Task<TResult> UpsertAsync<T,TKey,TResult>(this DbSet<T> db,
         TKey fallback,
         Func<T,TResult> updateFunction,
         CancellationToken ct = default)
@@ -120,13 +117,11 @@ public static class ContextExtensions
         }
 
         await entry.Context.SaveChangesAsync(ct);
-
         return result;
     }
 
     /// <inheritdoc cref="UpsertAsync{T,TKey,TResult}(Microsoft.EntityFrameworkCore.DbSet{T},TKey,System.Func{T,TResult},System.Threading.CancellationToken)"/>
-    public static async Task<TResult> UpsertAsync<T,TKey,TResult>(
-        this DbSet<T> db,
+    public static async Task<TResult> UpsertAsync<T,TKey,TResult>(this DbSet<T> db,
         TKey fallback,
         Func<T,Task<TResult>> updateFunction,
         CancellationToken ct = default)
@@ -151,7 +146,6 @@ public static class ContextExtensions
         }
 
         await entry.Context.SaveChangesAsync(ct);
-
         return result;
     }
 }
