@@ -58,21 +58,23 @@ public class AnimeWorldClient
             }
 
             using var response = await _http.SendAsync(request);
-
-            // Get the cookie for the next request
-            if (response.Headers.TryGetValues("Set-Cookie", out var cookies))
-            {
-                string? newCookie = cookies.FirstOrDefault(x => x.StartsWith("SecurityAW", StringComparison.Ordinal));
-                if (!string.IsNullOrEmpty(newCookie))
-                {
-                    await File.WriteAllTextAsync(cookie_file, newCookie[..newCookie.IndexOf(';')]);
-                }
-            }
-
             response.EnsureSuccessStatusCode();
 
-            await using var stream = await response.Content.ReadAsStreamAsync();
-            return SyndicationFeed.Load(XmlReader.Create(stream));
+            string content = await response.Content.ReadAsStringAsync();
+
+            // Get the cookie for the next request
+            string? newCookie = content.StartsWith("<html>", StringComparison.Ordinal) switch
+            {
+                true => getCookieFromContent(content),
+                false => getCookieFromHeaders(response)
+            };
+
+            if (!string.IsNullOrEmpty(newCookie))
+            {
+                await File.WriteAllTextAsync(cookie_file, newCookie);
+            }
+
+            return SyndicationFeed.Load(XmlReader.Create(new StringReader(content)));
         }
         catch (Exception ex)
         {
@@ -80,6 +82,25 @@ public class AnimeWorldClient
         }
 
         return empty_feed;
+    }
+
+    private static string? getCookieFromHeaders(HttpResponseMessage response)
+    {
+        if (!response.Headers.TryGetValues("Set-Cookie", out var cookies)) return null;
+
+        string? newCookie = cookies.FirstOrDefault(x => x.StartsWith("SecurityAW", StringComparison.Ordinal));
+
+        return !string.IsNullOrEmpty(newCookie)
+            ? newCookie[..newCookie.IndexOf(';')]
+            : null;
+    }
+
+    private static string? getCookieFromContent(string content)
+    {
+        int begin = content.IndexOf("SecurityAW", StringComparison.Ordinal);
+        int end = content.IndexOf(';', begin);
+
+        return content[begin..end].Trim();
     }
 
     private static AnimeWorldEpisode parseEpisode(SyndicationItem item)
