@@ -23,6 +23,7 @@ internal class BirthdateChecker(
     public async Task Execute(IJobExecutionContext context)
     {
         var guilds = await db.Members.WithBirthdate(DateTime.Now)
+            .Include(x => x.User)
             .GroupBy(m => m.Guild)
             .ToDictionaryAsync(x => x.Key, x => x.ToList());
 
