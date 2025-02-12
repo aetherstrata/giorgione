@@ -23,15 +23,14 @@ internal class BirthdateChecker(
     public async Task Execute(IJobExecutionContext context)
     {
         var guilds = await db.Members.WithBirthdate(DateTime.Now)
-            .Include(x => x.User)
-            .GroupBy(m => m.Guild)
-            .ToDictionaryAsync(x => x.Key, x => x.ToList());
+            .GroupBy(m => m.Guild, m => m.User)
+            .ToDictionaryAsync(x => x.Key);
 
         logger.LogDebug("Sending birthday greeting messages in {GuildCount} guilds.", guilds.Count);
 
         await Parallel.ForEachAsync(guilds, async (pair, token) =>
         {
-            string message = string.Join('\n', pair.Value.Select(m => mapGreetingMessage(m.User)));
+            string message = string.Join('\n', pair.Value.Select(mapGreetingMessage));
             var channel = (ITextChannel) await client.GetChannelAsync(pair.Key.BirthdayChannelId!.Value);
             await channel.SendMessageAsync(message);
         });

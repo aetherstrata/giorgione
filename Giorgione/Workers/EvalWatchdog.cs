@@ -67,7 +67,7 @@ public class EvalWatchdog(
                         .WithReferences(typeof(Enumerable).Assembly, typeof(HashSet<int>).Assembly, typeof(Span<char>).Assembly, typeof(QuartzScheduler).Assembly)
                         .WithImports("System", "System.IO", "System.Linq", "System.Text", "System.Collections.Generic", "Quartz"));
 
-                string result = o.ToString() ?? "null";
+                string result = o?.ToString() ?? "void";
 
                 if (result.Length < 2000)
                 {
