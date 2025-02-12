@@ -14,12 +14,16 @@ using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using Quartz;
+using Quartz.Core;
+
 namespace Giorgione.Workers;
 
 public class EvalWatchdog(
     DiscordSocketClient client,
     InteractionService interactionService,
     BotConfig config,
+    ISchedulerFactory  schedulerFactory,
     ILogger<EvalWatchdog> logger)
     : IHostedService
 {
@@ -27,6 +31,7 @@ public class EvalWatchdog(
 
     private readonly DiscordSocketClient _client = client;
     private readonly InteractionService _interactionService = interactionService;
+    private readonly ISchedulerFactory _schedulerFactory = schedulerFactory;
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
@@ -49,18 +54,18 @@ public class EvalWatchdog(
             return Task.CompletedTask;
         }
 
-        Task.Run(async () =>
+        return Task.Run(async () =>
         {
             var typing = arg.Channel.EnterTypingState();
 
             try
             {
                 object? o = await CSharpScript.EvaluateAsync(cleanMessage(arg.Content),
-                    globals: new EvalContext(this),
+                    globals: await EvalContext.Create(this),
                     globalsType: typeof(EvalContext),
                     options: ScriptOptions.Default
-                        .WithReferences(typeof(Enumerable).Assembly, typeof(HashSet<int>).Assembly, typeof(Span<char>).Assembly)
-                        .WithImports("System", "System.IO", "System.Linq", "System.Text", "System.Collections.Generic"));
+                        .WithReferences(typeof(Enumerable).Assembly, typeof(HashSet<int>).Assembly, typeof(Span<char>).Assembly, typeof(QuartzScheduler).Assembly)
+                        .WithImports("System", "System.IO", "System.Linq", "System.Text", "System.Collections.Generic", "Quartz"));
 
                 string result = o.ToString() ?? "null";
 
@@ -100,8 +105,6 @@ public class EvalWatchdog(
                 typing.Dispose();
             }
         });
-
-        return Task.CompletedTask;
     }
 
     private static string cleanMessage(ReadOnlySpan<char> message)
@@ -119,9 +122,23 @@ public class EvalWatchdog(
 
     // ReSharper disable once MemberCanBePrivate.Global
     // Required for script evaluation
-    public class EvalContext(EvalWatchdog context)
+    public class EvalContext
     {
-        public DiscordSocketClient Client { get; } = context._client;
-        public InteractionService InteractionService { get; } = context._interactionService;
+        public DiscordSocketClient Client { get; }
+        public InteractionService InteractionService { get; }
+        public IScheduler Scheduler { get; }
+
+        private EvalContext(DiscordSocketClient client, InteractionService interactionService, IScheduler scheduler)
+        {
+            Client = client;
+            InteractionService = interactionService;
+            Scheduler = scheduler;
+        }
+
+        internal static async Task<EvalContext> Create(EvalWatchdog context)
+        {
+            var scheduler = await context._schedulerFactory.GetScheduler();
+            return new EvalContext(context._client, context._interactionService, scheduler);
+        }
     }
 }
