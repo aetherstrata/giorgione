@@ -26,7 +26,7 @@ internal class BirthdateChecker(
             .GroupBy(m => m.Guild, m => m.User)
             .ToDictionaryAsync(x => x.Key);
 
-        logger.LogDebug("Sending birthday greeting messages in {GuildCount} guilds.", guilds.Count);
+        logger.LogDebug("Sending birthday greeting messages in {GuildCount} guilds", guilds.Count);
 
         await Parallel.ForEachAsync(guilds, async (pair, token) =>
         {

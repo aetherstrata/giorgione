@@ -1,6 +1,7 @@
 // Copyright (c) Davide Pierotti <d.pierotti@live.it>. Licensed under the GPLv3 Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System.Reflection;
 using System.Text;
 
 using Discord;
@@ -29,6 +30,17 @@ public class EvalWatchdog(
 {
     private const string command_name = "g.eval";
 
+    private static readonly Assembly[] assemblies =
+    [
+        typeof(Enumerable).Assembly, typeof(HashSet<int>).Assembly,
+        typeof(Span<char>).Assembly, typeof(QuartzScheduler).Assembly
+    ];
+    private static readonly string[] imports =
+    [
+        "System", "System.IO", "System.Linq", "System.Text",
+        "System.Collections.Generic", "Quartz"
+    ];
+
     private readonly DiscordSocketClient _client = client;
     private readonly InteractionService _interactionService = interactionService;
     private readonly ISchedulerFactory _schedulerFactory = schedulerFactory;
@@ -36,14 +48,12 @@ public class EvalWatchdog(
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _client.MessageReceived += eval;
-
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
         _client.MessageReceived -= eval;
-
         return Task.CompletedTask;
     }
 
@@ -63,9 +73,7 @@ public class EvalWatchdog(
                 object? o = await CSharpScript.EvaluateAsync(cleanMessage(arg.Content),
                     globals: await EvalContext.Create(this),
                     globalsType: typeof(EvalContext),
-                    options: ScriptOptions.Default
-                        .WithReferences(typeof(Enumerable).Assembly, typeof(HashSet<int>).Assembly, typeof(Span<char>).Assembly, typeof(QuartzScheduler).Assembly)
-                        .WithImports("System", "System.IO", "System.Linq", "System.Text", "System.Collections.Generic", "Quartz"));
+                    options: ScriptOptions.Default.WithReferences(assemblies).WithImports(imports));
 
                 string result = o?.ToString() ?? "void";
 
@@ -82,7 +90,6 @@ public class EvalWatchdog(
                 else
                 {
                     using var stream = new MemoryStream(Encoding.UTF8.GetBytes(result));
-
                     await arg.Channel.SendFileAsync(stream, "out.txt");
                 }
             }
@@ -96,6 +103,22 @@ public class EvalWatchdog(
                     .WithColor(Color.Red)
                     .WithTitle("Compilation Error")
                     .WithDescription($"```\n{diag}\n```")
+                    .Build();
+
+                await arg.Channel.SendMessageAsync(embed: embed);
+            }
+            catch (Exception e)
+            {
+                int endStack = e.StackTrace?.LastIndexOf("--- End of stack trace from previous location ---", StringComparison.Ordinal) ?? -1;
+                string? stackTrace = endStack > 0 ? e.StackTrace?[..endStack] : e.StackTrace;
+
+                logger.LogError(e, "Unhandled exception in eval command");
+
+                var embed = new EmbedBuilder()
+                    .WithColor(Color.Red)
+                    .WithTitle("Unhandled exception")
+                    .WithFields(new EmbedFieldBuilder().WithName("Message").WithValue(e.Message),
+                                new EmbedFieldBuilder().WithName("Stack trace").WithValue($"```\n{stackTrace}\n```"))
                     .Build();
 
                 await arg.Channel.SendMessageAsync(embed: embed);
