@@ -23,3 +23,4 @@ public class DesignTimeContextFactory : IDesignTimeDbContextFactory<AppDbContext
         return new AppDbContext(builder.Options);
     }
 }
+
