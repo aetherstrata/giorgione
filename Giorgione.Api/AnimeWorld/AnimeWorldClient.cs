@@ -11,7 +11,7 @@ namespace Giorgione.Api.AnimeWorld;
 
 public class AnimeWorldClient
 {
-    private const string rss_url = "http://www.animeworld.so/rss/episodes";
+    private const string rss_url = "https://www.animeworld.ac/rss/episodes";
     private const string cookie_file = "./aw_security_cookie";
 
     private static readonly SyndicationFeed empty_feed = new();
