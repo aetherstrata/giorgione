@@ -16,13 +16,11 @@ public class AnimeWorldClient
 
     private static readonly SyndicationFeed empty_feed = new();
 
-    private readonly HttpClient _http;
     private readonly ILogger<AnimeWorldClient> _logger;
 
-    public AnimeWorldClient(ILogger<AnimeWorldClient> logger, HttpClient httpClient)
+    public AnimeWorldClient(ILogger<AnimeWorldClient> logger)
     {
         _logger = logger;
-        _http = httpClient;
 
         if (!File.Exists(cookie_file))
         {
@@ -57,8 +55,7 @@ public class AnimeWorldClient
                 request.Headers.Add(HeaderNames.Cookie, securityCookie);
             }
 
-            using var response = await _http.SendAsync(request);
-            response.EnsureSuccessStatusCode();
+            using var response = await getResponse(request);
 
             string content = await response.Content.ReadAsStringAsync();
 
@@ -82,6 +79,26 @@ public class AnimeWorldClient
         }
 
         return empty_feed;
+    }
+
+    private static async Task<HttpResponseMessage> getResponse(HttpRequestMessage request)
+    {
+        HttpResponseMessage? response = null;
+        try
+        {
+            using var handler = new HttpClientHandler();
+            handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+            handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+            using var client = new HttpClient(handler);
+            response = await client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            return response;
+        }
+        catch
+        {
+            response?.Dispose();
+            throw;
+        }
     }
 
     private static string? getCookieFromHeaders(HttpResponseMessage response)
