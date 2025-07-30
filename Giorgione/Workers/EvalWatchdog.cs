@@ -23,7 +23,7 @@ namespace Giorgione.Workers;
 public class EvalWatchdog(
     DiscordSocketClient client,
     InteractionService interactionService,
-    BotConfig config,
+    BotConfiguration configuration,
     ISchedulerFactory  schedulerFactory,
     ILogger<EvalWatchdog> logger)
     : IHostedService
@@ -59,7 +59,7 @@ public class EvalWatchdog(
 
     private Task eval(SocketMessage arg)
     {
-        if (arg.Author.Id != config.SuperuserId || !arg.Content.StartsWith(command_name, StringComparison.Ordinal))
+        if (arg.Author.Id != configuration.SuperuserId || !arg.Content.StartsWith(command_name, StringComparison.Ordinal))
         {
             return Task.CompletedTask;
         }

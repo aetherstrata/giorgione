@@ -15,7 +15,7 @@ public class GiorgioneBot(
     DiscordSocketClient client,
     InteractionService interactionService,
     InteractionHandler interactionHandler,
-    BotConfig config,
+    BotConfiguration configuration,
     ILogger<GiorgioneBot> logger)
     : IHostedService
 {
@@ -25,7 +25,7 @@ public class GiorgioneBot(
         interactionService.Log += onLog;
 
         await interactionHandler.InitializeAsync();
-        await client.LoginAsync(TokenType.Bot, config.Token);
+        await client.LoginAsync(TokenType.Bot, configuration.Token);
         await client.StartAsync();
     }
 

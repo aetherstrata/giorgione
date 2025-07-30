@@ -3,7 +3,7 @@
 
 namespace Giorgione.Config;
 
-public sealed class BotConfig
+public sealed class BotConfiguration
 {
     public required string Token { get; init; }
     public required ulong TestGuildId { get; init; }

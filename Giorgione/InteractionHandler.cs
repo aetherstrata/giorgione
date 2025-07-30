@@ -18,7 +18,7 @@ namespace Giorgione;
 public class InteractionHandler(
     DiscordSocketClient client,
     InteractionService handler,
-    BotConfig config,
+    BotConfiguration configuration,
     ILogger<InteractionHandler> logger,
     IServiceProvider services,
     IHostEnvironment environment)
@@ -46,7 +46,7 @@ public class InteractionHandler(
         // Context & Slash commands can be automatically registered, but this process needs to happen after the client enters the READY state.
         // Since Global Commands take around 1 hour to register, we should use a test guild to instantly update and test our commands.
         if (environment.IsDevelopment())
-            await handler.RegisterCommandsToGuildAsync(config.TestGuildId);
+            await handler.RegisterCommandsToGuildAsync(configuration.TestGuildId);
         else
             await handler.RegisterCommandsGloballyAsync(true);
     }

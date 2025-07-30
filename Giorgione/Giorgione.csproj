@@ -32,6 +32,7 @@
     <ProjectReference Include="..\Giorgione.Api\Giorgione.Api.csproj" />
     <ProjectReference Include="..\Giorgione.Data\Giorgione.Data.csproj" />
     <ProjectReference Include="..\Giorgione.Audio\Giorgione.Audio.csproj" />
+    <ProjectReference Include="..\Giorgione.Fractals\Giorgione.Fractals.csproj" />
   </ItemGroup>
 
   <ItemGroup>

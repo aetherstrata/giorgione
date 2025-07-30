@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Giorgione.Api", "Giorgione.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Giorgione.Audio", "Giorgione.Audio\Giorgione.Audio.csproj", "{E982C5C7-3789-49EB-9098-663938D54CE2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Giorgione.Fractals", "Giorgione.Fractals\Giorgione.Fractals.csproj", "{F72F06B7-8065-4146-96C5-6C1777ECD045}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
