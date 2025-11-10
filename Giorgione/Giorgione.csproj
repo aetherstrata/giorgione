@@ -14,17 +14,17 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.14.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.14.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.7" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
 
-    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.14.0" />
-    <PackageReference Include="Quartz.Serialization.Json" Version="3.14.0" />
+    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.15.1" />
+    <PackageReference Include="Quartz.Serialization.Json" Version="3.15.1" />
 
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.2" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
 
@@ -33,6 +33,7 @@
     <ProjectReference Include="..\Giorgione.Data\Giorgione.Data.csproj" />
     <ProjectReference Include="..\Giorgione.Audio\Giorgione.Audio.csproj" />
     <ProjectReference Include="..\Giorgione.Fractals\Giorgione.Fractals.csproj" />
+    <ProjectReference Include="..\Giorgione.Osu\Giorgione.Osu.csproj" />
   </ItemGroup>
 
   <ItemGroup>

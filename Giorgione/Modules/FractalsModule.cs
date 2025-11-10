@@ -29,10 +29,10 @@ public class FractalsModule(ILogger<BotModule> logger) : InteractionModuleBase<S
     {
         Complex? r = (rx.HasValue, ry.HasValue) switch
         {
+            (true, true) => new Complex(rx.Value, ry.Value),
             (false, false) => null,
             (true, false) => new Complex(rx.Value, 0),
             (false, true) => new Complex(0, ry.Value),
-            _ => new Complex(rx.Value, ry.Value),
         };
         using var generator = new FractalGenerator(width, height);
         using var imageStream = generator.GenerateFractal((centerX, centerY), 1.5, Fractal.MarekDragon(r));

@@ -31,8 +31,8 @@ builder.Services
             .UseSnakeCaseNamingConvention()
             .EnableDetailedErrors();
     })
-    .AddSingleton(builder.Configuration.GetSection("BotConfig").Get<BotConfig>()
-                  ?? throw new InvalidOperationException("Could not read the bot configuration"))
+    .AddSingleton(builder.GetConfig<BotConfiguration>("BotConfig"))
+    .AddSingleton(builder.GetConfig<OsuConfiguration>("OsuConfig"))
     .AddSingleton(new DiscordSocketConfig
     {
         GatewayIntents = GatewayIntents.AllUnprivileged |
