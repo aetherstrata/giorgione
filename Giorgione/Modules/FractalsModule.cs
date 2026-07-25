@@ -27,13 +27,8 @@ public class FractalsModule(ILogger<BotModule> logger) : InteractionModuleBase<S
     [SlashCommand("marek", "Generate a Marek's dragon fractal")]
     public async Task Marek(double centerX = -0.5, double centerY = -0.1, double zoom = 1, int width = 800, int height = 800, int? rx = null, int? ry = null)
     {
-        Complex? r = (rx.HasValue, ry.HasValue) switch
-        {
-            (true, true) => new Complex(rx.Value, ry.Value),
-            (false, false) => null,
-            (true, false) => new Complex(rx.Value, 0),
-            (false, true) => new Complex(0, ry.Value),
-        };
+        Complex r = new  Complex(rx ?? 0, ry ?? 0);
+
         using var generator = new FractalGenerator(width, height);
         using var imageStream = generator.GenerateFractal((centerX, centerY), 1.5, Fractal.MarekDragon(r));
         logger.LogDebug("Fractal generated");
